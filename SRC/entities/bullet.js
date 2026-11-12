@@ -2,9 +2,10 @@
 // ENTITIES/BULLET — пули игрока и врагов
 // ============================================
 
-import { G } from '../state.js';
+import { G, P, AR } from '../state.js';
 import { SPR } from '../sprites.js';
 import { part } from '../effects.js';
+import { damageEnemy, hurtPlayer } from '../combat.js';
 
 // Пуля игрока
 export function fireBullet(x, y, angle, speed, dmg, pierce, isDrone) {
@@ -45,7 +46,6 @@ export function updateBullets(dt) {
     bl.x += bl.vx * dt;
     bl.y += bl.vy * dt;
 
-    const AR = G.AR; // AR должен быть доступен
     let dead = bl.l <= 0 || bl.x < AR.x || bl.x > AR.x + AR.w || bl.y < AR.y || bl.y > AR.y + AR.h;
 
     if (!dead) {
@@ -83,7 +83,6 @@ export function updateEnemyBullets(dt) {
     eb.x += eb.vx * dt;
     eb.y += eb.vy * dt;
 
-    const AR = G.AR;
     if (eb.l <= 0 || eb.x < AR.x - 16 || eb.x > AR.x + AR.w + 16 || eb.y < AR.y - 16 || eb.y > AR.y + AR.h + 16) {
       G.ebul.splice(i, 1);
       continue;
@@ -97,7 +96,3 @@ export function updateEnemyBullets(dt) {
     }
   }
 }
-
-// Импортируем то что нужно (будет доступно после создания модулей)
-import { damageEnemy, hurtPlayer } from '../combat.js';
-import { P } from '../state.js';
