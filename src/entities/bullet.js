@@ -1,93 +1,65 @@
-// ============================================
-// ENTITIES/BULLET — пули игрока и врагов
-// ============================================
-
 import { G, P, AR } from '../state.js';
 import { SPR } from '../sprites.js';
-import { part } from '../effects.js';
+import { part, ring, shake, flash } from '../effects.js';
 import { damageEnemy, hurtPlayer } from '../combat.js';
+import { hyp, clamp, angDiff, rand } from '../constants.js';
+import { A } from '../audio.js';
 
-// Пуля игрока
-export function fireBullet(x, y, angle, speed, dmg, pierce, isDrone) {
-  G.bul.push({
-    x, y,
-    vx: Math.cos(angle) * speed,
-    vy: Math.sin(angle) * speed,
-    r: 2,
-    dmg,
-    p: pierce || 0,
-    l: isDrone ? 1.1 : 1.2,
-    hit: [],
-    a: angle,
-    dr: isDrone || false
-  });
+export function fireBullet(x,y,angle,speed,dmg,pierce,isDrone){
+  G.bul.push({x,y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,r:2,dmg,p:pierce||0,l:isDrone?1.1:1.2,hit:[],a:angle,dr:isDrone||false});
 }
 
-// Пуля врага (орб)
-export function eShoot(e, ang, spd, dmg, sprKey) {
-  if (G.ebul.length > 200) return;
-  G.ebul.push({
-    x: e.x + Math.cos(ang) * (e.r + 2),
-    y: e.y + Math.sin(ang) * (e.r + 2),
-    vx: Math.cos(ang) * spd,
-    vy: Math.sin(ang) * spd,
-    r: 2.5,
-    dmg,
-    l: 4,
-    spr: sprKey || SPR.orbM
-  });
+export function fireRocketEntity(x,y,angle,dmg){
+  G.rockets.push({x,y,a:angle,vx:Math.cos(angle)*160,vy:Math.sin(angle)*160,r:3,dmg,l:2.4});
 }
 
-// Обновление пуль игрока
-export function updateBullets(dt) {
-  for (let i = G.bul.length - 1; i >= 0; i--) {
-    const bl = G.bul[i];
-    bl.l -= dt;
-    bl.x += bl.vx * dt;
-    bl.y += bl.vy * dt;
+export function eShoot(e,ang,spd,dmg,sprKey){
+  if(G.ebul.length>200)return;
+  G.ebul.push({x:e.x+Math.cos(ang)*(e.r+2),y:e.y+Math.sin(ang)*(e.r+2),vx:Math.cos(ang)*spd,vy:Math.sin(ang)*spd,r:2.5,dmg,l:4,spr:sprKey||SPR.orbM});
+}
 
-    let dead = bl.l <= 0 || bl.x < AR.x || bl.x > AR.x + AR.w || bl.y < AR.y || bl.y > AR.y + AR.h;
-
-    if (!dead) {
-      for (let j = 0; j < G.enemies.length; j++) {
-        const e = G.enemies[j];
-        if (e.dead || bl.hit.indexOf(e.id) >= 0) continue;
-        const dx = e.x - bl.x, dy = e.y - bl.y;
-        if (dx * dx + dy * dy < (e.r + bl.r) * (e.r + bl.r)) {
-          bl.hit.push(e.id);
-          damageEnemy(e, bl.dmg, false, bl.x, bl.y);
-          if (bl.p > 0) bl.p--;
-          else dead = true;
-          break;
-        }
-      }
+export function updateBullets(dt){
+  for(let i=G.bul.length-1;i>=0;i--){
+    const bl=G.bul[i];bl.l-=dt;bl.x+=bl.vx*dt;bl.y+=bl.vy*dt;
+    let dead=bl.l<=0||bl.x<AR.x||bl.x>AR.x+AR.w||bl.y<AR.y||bl.y>AR.y+AR.h;
+    if(!dead)for(let j=0;j<G.enemies.length;j++){
+      const e=G.enemies[j];if(e.dead||bl.hit.indexOf(e.id)>=0)continue;
+      const dx=e.x-bl.x,dy=e.y-bl.y;
+      if(dx*dx+dy*dy<(e.r+bl.r)*(e.r+bl.r)){
+        bl.hit.push(e.id);damageEnemy(e,bl.dmg,false,bl.x,bl.y,bl.a,false);
+        if(bl.p>0)bl.p--;else dead=true;break;}
     }
-
-    if (dead) {
-      if (bl.l > 0) part(bl.x, bl.y, bl.dr ? '#9dff3c' : '#22e6ff', 3, 45, 0.18, 1);
-      G.bul.splice(i, 1);
-    }
+    if(dead){if(bl.l>0)part(bl.x,bl.y,bl.dr?'#9dff3c':'#22e6ff',3,45,0.18,1);G.bul.splice(i,1)}
   }
 }
 
-// Обновление пуль врагов
-export function updateEnemyBullets(dt) {
-  for (let i = G.ebul.length - 1; i >= 0; i--) {
-    const eb = G.ebul[i];
-    eb.l -= dt;
-    eb.x += eb.vx * dt;
-    eb.y += eb.vy * dt;
+export function updateRockets(dt){
+  for(let i=G.rockets.length-1;i>=0;i--){
+    const r=G.rockets[i];r.l-=dt;
+    let tgt=null,bd=220*220;
+    for(const e of G.enemies){if(e.dead)continue;const d2=(e.x-r.x)**2+(e.y-r.y)**2;if(d2<bd){bd=d2;tgt=e}}
+    if(tgt){const want=Math.atan2(tgt.y-r.y,tgt.x-r.x);r.a+=clamp(angDiff(r.a,want),-2.4*dt,2.4*dt)}
+    r.vx=Math.cos(r.a)*160;r.vy=Math.sin(r.a)*160;r.x+=r.vx*dt;r.y+=r.vy*dt;
+    part(r.x,r.y,'#ffb020',1,30,0.2,1);
+    let boom=r.l<=0||r.x<AR.x||r.x>AR.x+AR.w||r.y<AR.y||r.y>AR.y+AR.h;
+    if(!boom)for(const e of G.enemies){if(e.dead)continue;
+      if(hyp(e.x-r.x,e.y-r.y)<e.r+r.r){boom=true;break}}
+    if(boom){explodeRocket(r.x,r.y,r.dmg);G.rockets.splice(i,1)}
+  }
+}
 
-    if (eb.l <= 0 || eb.x < AR.x - 16 || eb.x > AR.x + AR.w + 16 || eb.y < AR.y - 16 || eb.y > AR.y + AR.h + 16) {
-      G.ebul.splice(i, 1);
-      continue;
-    }
+function explodeRocket(x,y,dmg){
+  ring(x,y,4,50,'#ffb020',0.5);part(x,y,'#ffb020',26,140,0.6,2);part(x,y,'#ffffff',10,90,0.3,1);
+  shake(6);flash(0.2,'#ffb020');A.explode();
+  for(const e of G.enemies){if(e.dead)continue;const d=hyp(e.x-x,e.y-y);
+    if(d<50)damageEnemy(e,dmg*(1-d/50*0.5),true,e.x,e.y,0,true)}
+}
 
-    const dx = eb.x - P.x, dy = eb.y - P.y;
-    if (dx * dx + dy * dy < (eb.r + P.r * 0.9) * (eb.r + P.r * 0.9)) {
-      hurtPlayer(eb.dmg);
-      part(eb.x, eb.y, '#ff2fb0', 7, 70, 0.3, 1);
-      G.ebul.splice(i, 1);
-    }
+export function updateEnemyBullets(dt){
+  for(let i=G.ebul.length-1;i>=0;i--){
+    const eb=G.ebul[i];eb.l-=dt;eb.x+=eb.vx*dt;eb.y+=eb.vy*dt;
+    if(eb.l<=0||eb.x<AR.x-16||eb.x>AR.x+AR.w+16||eb.y<AR.y-16||eb.y>AR.y+AR.h+16){G.ebul.splice(i,1);continue}
+    const dx=eb.x-P.x,dy=eb.y-P.y;
+    if(dx*dx+dy*dy<(eb.r+P.r*0.9)*(eb.r+P.r*0.9)){hurtPlayer(eb.dmg);part(eb.x,eb.y,'#ff2fb0',7,70,0.3,1);G.ebul.splice(i,1)}
   }
 }
