@@ -158,6 +158,10 @@ export const A = {
     });
   },
 
+  rocket(){this.tone(140,0.3,'sawtooth',0.12,3);this.noise(0.25,0.1,500,'lowpass')},
+  explode(){this.tone(70,0.4,'square',0.18,0.3);this.noise(0.4,0.16,300,'lowpass')},
+  shieldHit(){if(!this.gate('sv',60))return;this.tone(1200,0.06,'triangle',0.07,0.5)},
+  
   beat(i, heat) {
     if (!this.ctx || !this.on) return;
     const bass = [0, 0, 7, 0, 5, 0, 7, 3][i % 8];
