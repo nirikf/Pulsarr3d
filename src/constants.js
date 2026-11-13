@@ -1,6 +1,6 @@
 export const TAU = Math.PI * 2;
 export const STEP = 1 / 60;
-export const WORLD = { w: 1280, h: 960 };
+export const WORLD = { w: 640, h: 480 };
 
 export const PAL = {
   o:'#0a0518', d:'#150a2e', c:'#22e6ff', C:'#b8fbff', g:'#9dff3c', G:'#4d8f1e',
@@ -28,7 +28,7 @@ export const UPS = [
   {k:'regen',n:'РЕГЕН',d:'чинит корпус вне боя',cap:3,col:'#a86bff'},
   {k:'shield',n:'ЩИТ',d:'+25 энергии щита, сам восстанавливается',cap:3,col:'#a86bff'},
   {k:'kir',n:'СКОРОСТРЕЛ КИРЮША',d:'+14% темп и +18% скорость пуль',cap:3,col:'#22e6ff'},
-  {k:'rocket',n:'РАКЕТОМЁТ',d:'ракета раз в 5с, урон 300-500',cap:2,col:'#ffb020'}
+  {k:'rocket',n:'РАКЕТОМЁТ',d:'ракета раз в 5с · урон 50, на 2 ур. 150',cap:2,col:'#ffb020'}
 ];
 
 export const ICON = {
