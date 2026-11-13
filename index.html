@@ -27,6 +27,7 @@ canvas#cv{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
 #stage.low #vig{animation:danger .9s steps(2,end) infinite}
 @keyframes danger{0%,100%{box-shadow:inset 0 0 0 rgba(255,77,77,0)}50%{box-shadow:inset 0 0 90px rgba(255,77,77,.5)}}
 
+/* ---------- pixel chrome ---------- */
 .pnl{background:var(--panel);border:3px solid var(--edge2);
   box-shadow:0 0 0 3px var(--void),inset 0 0 0 2px var(--panel2),0 6px 0 rgba(0,0,0,.55)}
 .btn{font-family:var(--f);font-size:15px;letter-spacing:1px;text-transform:uppercase;color:var(--ink);
@@ -41,12 +42,14 @@ canvas#cv{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
 .btn.mag:hover{background:var(--amber);color:#12001a}
 .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
 
+/* ---------- scrollbars ---------- */
 *{scrollbar-width:thin;scrollbar-color:var(--cyan) var(--deep)}
 ::-webkit-scrollbar{width:10px;height:10px}
 ::-webkit-scrollbar-track{background:var(--deep);border-left:2px solid var(--edge)}
 ::-webkit-scrollbar-thumb{background:var(--cyan);border:2px solid var(--void)}
 ::-webkit-scrollbar-thumb:hover{background:var(--green)}
 
+/* ---------- top ---------- */
 #top{position:absolute;top:0;left:0;right:0;z-index:12;display:flex;align-items:center;gap:6px;
   padding:6px 8px;background:linear-gradient(180deg,rgba(10,5,24,.96),rgba(10,5,24,.7) 70%,transparent);pointer-events:none}
 #top .logo{font-size:15px;color:var(--cyan);text-shadow:2px 2px 0 #12306b;letter-spacing:1px;white-space:nowrap}
@@ -66,6 +69,7 @@ canvas#cv{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
 .ib:active{transform:translateY(3px);box-shadow:none}
 .ib.off{color:var(--dim);border-color:var(--edge)}
 
+/* ---------- boss ---------- */
 #bossbar{position:absolute;left:50%;transform:translateX(-50%);z-index:11;width:min(420px,88vw);
   display:none;pointer-events:none}
 #bossbar.on{display:block}
@@ -77,20 +81,19 @@ canvas#cv{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
   background:repeating-linear-gradient(90deg,transparent 0 9px,var(--void) 9px 11px)}
 #bossbar .bar i{background:var(--red)}
 
+/* ---------- hud ---------- */
 #hud{position:absolute;left:0;right:0;bottom:0;z-index:12;display:flex;align-items:flex-end;justify-content:space-between;
   gap:10px;padding:8px 10px 10px;background:linear-gradient(0deg,rgba(10,5,24,.96),rgba(10,5,24,.6) 60%,transparent);
   pointer-events:none}
-<div class="vitals">
-      <div class="bar seg" id="hpBar"><i id="hpFill"></i><u><span>КОРПУС</span><span id="hpTxt">100</span></u></div>
-      <div class="bar d" id="shBar" style="display:none"><i id="shFill"></i></div>
-      <div class="bar d"><i id="dashFill"></i></div>
-      <div class="bar d" id="rkBar" style="display:none"><i id="rkFill"></i></div>
-      <div class="mods" id="mods"></div>
-    </div>
+.vitals{display:flex;flex-direction:column;gap:5px;width:min(46vw,240px)}
+.vitals .bar{height:16px}
+.vitals .bar u{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;
   padding:0 5px;font-size:12px;text-decoration:none;color:var(--ink);text-shadow:1px 1px 0 rgba(0,0,0,.85);z-index:2}
 #hpFill{background:var(--green)}
 .bar.low i{background:var(--red)}
 #dashFill{background:var(--cyan)}
+#shFill{background:var(--violet)}
+#rkFill{background:var(--amber)}
 .vitals .bar.d{height:8px}
 .mods{display:flex;gap:4px;flex-wrap:wrap;max-width:min(46vw,240px)}
 .mods canvas{width:18px;height:18px;image-rendering:pixelated;background:var(--deep);border:2px solid var(--edge)}
@@ -100,17 +103,12 @@ canvas#cv{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
 .combo s{text-decoration:none;font-size:10px;color:var(--dim);letter-spacing:2px}
 .combo .bar{width:74px;height:6px}
 #comboFill{background:var(--amber)}
-#dashBtn{display:none;pointer-events:auto;width:78px;height:78px;background:var(--panel2);
-  border:3px solid var(--cyan);color:var(--cyan);font-family:var(--f);font-size:14px;letter-spacing:1px;
-  box-shadow:0 5px 0 var(--void);cursor:pointer;position:relative;overflow:hidden}
-#dashBtn span{position:relative;z-index:2}
-#dashBtn:before{content:'';position:absolute;left:0;right:0;bottom:0;height:calc(var(--p,1)*100%);
-  background:rgba(34,230,255,.22)}
-#dashBtn.cool{border-color:var(--edge);color:var(--dim)}
-#dashBtn:active{transform:translateY(5px);box-shadow:none}
 #keyhint{font-size:12px;color:var(--dim);text-align:right;line-height:1.5}
 #keyhint b{color:var(--cyan);font-weight:400}
+#touchhint{display:none;font-size:10px;color:var(--dim);text-align:right;line-height:1.6;letter-spacing:1px}
+#touchhint b{color:var(--cyan);font-weight:400}
 
+/* ---------- banner ---------- */
 #banner{position:absolute;left:0;right:0;top:34%;z-index:10;text-align:center;pointer-events:none;opacity:0}
 #banner.go{animation:ban 1.9s steps(24,end)}
 #banner b{display:block;font-size:clamp(26px,8vw,52px);color:var(--cyan);text-shadow:4px 4px 0 var(--mag),8px 8px 0 rgba(0,0,0,.5);font-weight:400}
@@ -119,6 +117,7 @@ canvas#cv{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
 @keyframes ban{0%{opacity:0;transform:translateY(14px) scale(.9)}12%{opacity:1;transform:none}
   70%{opacity:1}100%{opacity:0;transform:translateY(-10px)}}
 
+/* ---------- screens ---------- */
 .scr{position:absolute;inset:0;z-index:20;display:none;align-items:flex-start;justify-content:center;padding:12px;
   background:rgba(8,3,20,.93);overflow-y:auto}
 .scr.on{display:flex}
@@ -180,10 +179,17 @@ h2.bad{color:var(--red)} h2.good{color:var(--green)}
 .stat.g b{color:var(--green)}.stat.a b{color:var(--amber)}.stat.m b{color:var(--mag)}
 .rec{display:inline-block;margin:10px 0;padding:5px 10px;background:var(--amber);color:#231400;font-size:13px;
   border:2px solid var(--void);animation:pop .7s steps(2,end) infinite}
+noscript{position:fixed;inset:0;z-index:99;display:grid;place-items:center;background:var(--void);color:var(--red);
+  font-size:18px;text-align:center;padding:20px}
+
+/* ---------- adaptive ---------- */
+@media (hover:none) and (pointer:coarse){
+  #touchhint{display:block}
+  #keyhint{display:none}
+}
 @media (max-width:760px){
   .cards{grid-template-columns:1fr}
   #keyhint{display:none}
-  #dashBtn{display:grid;place-items:center}
   #top .logo{font-size:12px}
   .chip s{display:none}
   .box{padding:14px}
@@ -192,8 +198,8 @@ h2.bad{color:var(--red)} h2.good{color:var(--green)}
 @media (max-width:380px){
   .vitals{width:42vw}
   .combo{min-width:60px}.combo .bar{width:60px}.combo b{font-size:17px}
-  #dashBtn{width:68px;height:68px;font-size:12px}
   #top .logo{display:none}
+  #touchhint{font-size:9px}
 }
 @media (max-height:560px){ h1{font-size:34px} .lead{display:none} .best{margin-top:8px;padding-top:8px} }
 </style>
@@ -225,11 +231,15 @@ h2.bad{color:var(--red)} h2.good{color:var(--green)}
   <div id="hud">
     <div class="vitals">
       <div class="bar seg" id="hpBar"><i id="hpFill"></i><u><span>КОРПУС</span><span id="hpTxt">100</span></u></div>
-      <div class="bar d"><i id="dashFill"></i></div>
+      <div class="bar d" id="shBar" title="Энергетический щит" style="display:none"><i id="shFill"></i></div>
+      <div class="bar d" title="Откат рывка"><i id="dashFill"></i></div>
+      <div class="bar d" id="rkBar" title="Готовность ракеты" style="display:none"><i id="rkFill"></i></div>
       <div class="mods" id="mods"></div>
     </div>
     <div class="combo" id="comboBox"><b id="comboTxt">x1.0</b><s>КОМБО</s><div class="bar"><i id="comboFill"></i></div></div>
-    <div id="keyhint"><b>WASD</b> ход · <b>МЫШЬ</b> прицел<br><b>ПРОБЕЛ</b> рывок · <b>P</b> пауза</div>знак
+    <div id="keyhint"><b>WASD</b> ход · <b>МЫШЬ</b> прицел<br><b>ПРОБЕЛ</b> рывок · <b>ЛКМ</b> ракета · <b>SHIFT</b> точный ход</div>
+    <div id="touchhint"><b>2×ТАП СЛЕВА</b> — рывок<br><b>2×ТАП СПРАВА</b> — ракета</div>
+  </div>
 
   <section class="scr on" id="sTitle"><div class="box">
     <p class="eyebrow">ПИКСЕЛЬНАЯ АРЕНА · 10 ВОЛН · 2 СТРАЖА</p>
@@ -243,7 +253,7 @@ h2.bad{color:var(--red)} h2.good{color:var(--green)}
       <div><s>ЗАПУСКОВ</s><b id="tRuns">0</b></div>
     </div>
     <div class="row"><button class="btn pri" id="bStart">ЗАПУСТИТЬ КОНТУР</button></div>
-    <p class="sub" style="margin-top:12px">Звук включён. На телефоне: левая половина экрана — ход, правая — прицел, кнопка — рывок.</p>
+    <p class="sub" style="margin-top:12px">Звук включится после первого клика. На телефоне: левая половина — ход (двойной тап = рывок), правая — прицел (двойной тап = ракета).</p>
   </div></section>
 
   <section class="scr" id="sUp"><div class="box">
@@ -285,30 +295,11 @@ h2.bad{color:var(--red)} h2.good{color:var(--green)}
   </div></section>
 </div>
 
-<script>
-(function(){
-  function show(msg){
-    var d=document.getElementById('dbg');
-    if(!d){
-      d=document.createElement('pre');d.id='dbg';
-      d.style.cssText='position:fixed;z-index:999;top:0;left:0;right:0;max-height:45%;overflow:auto;background:#1a0505;color:#ff9090;padding:8px;font-size:12px;white-space:pre-wrap;border-bottom:2px solid #f00';
-      document.body.appendChild(d);
-    }
-    d.textContent+=msg+'\n';
-  }
-  window.addEventListener('error',function(e){
-    if(e.target&&e.target.tagName==='SCRIPT'){show('НЕ ЗАГРУЗИЛСЯ ФАЙЛ: '+(e.target.src||''))}
-    else show('ОШИБКА: '+e.message+' ('+(e.filename||'')+':'+(e.lineno||'')+')');
-  },true);
-  window.addEventListener('unhandledrejection',function(e){show('PROMISE: '+e.reason)});
-  window.__dbg=show;
-})();
-</script>
+<noscript>Для игры нужен JavaScript. Включи его в настройках браузера и перезагрузи страницу.</noscript>
+
 <script type="module">
-import('./src/game.js').then(function(m){
-  m.initGame();
-  window.__dbg('OK: игра запущена');
-}).catch(function(err){
-  window.__dbg('ОШИБКА МОДУЛЯ: '+((err&&err.stack)||err));
-});
+import { initGame } from './src/game.js';
+initGame();
 </script>
+</body>
+</html>
