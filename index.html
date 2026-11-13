@@ -283,9 +283,30 @@ h2.bad{color:var(--red)} h2.good{color:var(--green)}
   </div></section>
 </div>
 
-<script type="module">
-import { initGame } from './src/game.js';
-initGame();
+<script>
+(function(){
+  function show(msg){
+    var d=document.getElementById('dbg');
+    if(!d){
+      d=document.createElement('pre');d.id='dbg';
+      d.style.cssText='position:fixed;z-index:999;top:0;left:0;right:0;max-height:45%;overflow:auto;background:#1a0505;color:#ff9090;padding:8px;font-size:12px;white-space:pre-wrap;border-bottom:2px solid #f00';
+      document.body.appendChild(d);
+    }
+    d.textContent+=msg+'\n';
+  }
+  window.addEventListener('error',function(e){
+    if(e.target&&e.target.tagName==='SCRIPT'){show('НЕ ЗАГРУЗИЛСЯ ФАЙЛ: '+(e.target.src||''))}
+    else show('ОШИБКА: '+e.message+' ('+(e.filename||'')+':'+(e.lineno||'')+')');
+  },true);
+  window.addEventListener('unhandledrejection',function(e){show('PROMISE: '+e.reason)});
+  window.__dbg=show;
+})();
 </script>
-</body>
-</html>
+<script type="module">
+import('./src/game.js').then(function(m){
+  m.initGame();
+  window.__dbg('OK: игра запущена');
+}).catch(function(err){
+  window.__dbg('ОШИБКА МОДУЛЯ: '+((err&&err.stack)||err));
+});
+</script>
