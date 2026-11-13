@@ -56,20 +56,15 @@ export function updateBullets(dt) {
         if (dx * dx + dy * dy < (e.r + bl.r) * (e.r + bl.r)) {
           bl.hit.push(e.id);
           damageEnemy(e, bl.dmg, false, bl.x, bl.y);
-          if (bl.p > 0) {
-            bl.p--;
-          } else {
-            dead = true;
-          }
+          if (bl.p > 0) bl.p--;
+          else dead = true;
           break;
         }
       }
     }
 
     if (dead) {
-      if (bl.l > 0) {
-        part(bl.x, bl.y, bl.dr ? '#9dff3c' : '#22e6ff', 3, 45, 0.18, 1);
-      }
+      if (bl.l > 0) part(bl.x, bl.y, bl.dr ? '#9dff3c' : '#22e6ff', 3, 45, 0.18, 1);
       G.bul.splice(i, 1);
     }
   }
