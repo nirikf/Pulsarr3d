@@ -19,15 +19,18 @@ export function makeEnemy(type, x, y) {
   const e = {
     id: nextEid(), type, x, y, vx: 0, vy: 0, fl: 0, dead: false, t: rand(0, 9),
     hitT: 0, tel: 0, sub: 0, ang: rand(0, TAU), st: 'walk', cd: rand(1, 3), lock: 0,
-    face: rand(0, TAU), shieldFl: 0, beam: null, mode: 'normal'
+    face: rand(0, TAU), shieldFl: 0, beam: null, mode: 'normal',
+    group: null, slot: 0, guardId: null,
+    tx: x, ty: y, tface: 0, ax: x, ay: y, ar: 0,
+    dodgeCd: rand(0, 0.4), dodgeT: 0, dvx: 0, dvy: 0
   };
   if (type === 'grunt') { e.r = 5; e.hp = 20 * sc * D.hp; e.sp = 40 * D.sp; e.dmg = 8 * D.dmg; e.pts = 10; e.sh = 1; e.spr = SPR.grunt; e.col = '#ff2fb0'; }
   else if (type === 'mini') { e.r = 3.5; e.hp = 9 * sc * D.hp; e.sp = 62 * D.sp; e.dmg = 5 * D.dmg; e.pts = 5; e.sh = Math.random() < 0.4 ? 1 : 0; e.spr = SPR.mini; e.col = '#a86bff'; }
   else if (type === 'shooter') { e.r = 6; e.hp = 26 * sc * D.hp; e.sp = 26 * D.sp; e.dmg = 7 * D.dmg; e.pts = 18; e.sh = 2; e.spr = SPR.shooter; e.col = '#ffb020'; e.cd = rand(0.7, 1.8); }
   else if (type === 'splitter') { e.r = 6.5; e.hp = 34 * sc * D.hp; e.sp = 30 * D.sp; e.dmg = 10 * D.dmg; e.pts = 22; e.sh = 2; e.spr = SPR.splitter; e.col = '#a86bff'; }
   else if (type === 'tank') { e.r = 9; e.hp = 85 * sc * D.hp; e.sp = 20 * D.sp; e.dmg = 16 * D.dmg; e.pts = 45; e.sh = 4; e.spr = SPR.tank; e.col = '#ff4d4d'; e.cd = rand(2, 3.6); }
-  else if (type === 'shielder') { e.r = 6; e.hp = 40 * sc * D.hp; e.sp = 24 * D.sp; e.dmg = 9 * D.dmg; e.pts = 26; e.sh = 2; e.spr = SPR.shielder; e.col = '#4d8cff'; e.cd = rand(1, 2); }
-  else if (type === 'sniper') { e.r = 5; e.hp = 24 * sc * D.hp; e.sp = 34 * D.sp; e.dmg = 6 * D.dmg; e.pts = 24; e.sh = 2; e.spr = SPR.sniper; e.col = '#a86bff'; e.cd = 3; }
+  else if (type === 'shielder') { e.r = 6; e.hp = 40 * sc * D.hp; e.sp = 30 * D.sp; e.dmg = 9 * D.dmg; e.pts = 26; e.sh = 2; e.spr = SPR.shielder; e.col = '#4d8cff'; e.cd = rand(1, 2); }
+  else if (type === 'sniper') { e.r = 5; e.hp = 24 * sc * D.hp; e.sp = 34 * D.sp; e.dmg = 6 * D.dmg; e.pts = 30; e.sh = 2; e.spr = SPR.sniper; e.col = '#a86bff'; e.cd = 3; }
   else if (type === 'medic') { e.r = 5; e.hp = 70 * sc * D.hp; e.sp = 46 * D.sp; e.dmg = 0; e.pts = 28; e.sh = 2; e.spr = SPR.medic; e.col = '#9dff3c'; }
   else if (type === 'boss') {
     const bi = G.wave >= 10 ? 2 : 1;
@@ -39,9 +42,15 @@ export function makeEnemy(type, x, y) {
   return e;
 }
 
-export function spawn(type) {
-  const p = edge(), e = makeEnemy(type, p.x, p.y);
+export function spawnAt(type, x, y, extra) {
+  const e = makeEnemy(type, x, y);
+  if (extra) Object.assign(e, extra);
   G.enemies.push(e);
-  ring(p.x, p.y, 2, 12, e.col, 0.35);
+  ring(x, y, 2, 12, e.col, 0.35);
   return e;
+}
+
+export function spawn(type) {
+  const p = edge();
+  return spawnAt(type, p.x, p.y);
 }
