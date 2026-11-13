@@ -267,5 +267,18 @@ SPR.orbA = orbSprite('#ffb020', '#fff0cf');
 SPR.orbR = orbSprite('#ff4d4d', '#ffd9d9');
 SPR.orbV = orbSprite('#a86bff', '#e8dcff');
 
+SPR.shielder = spr([
+'....ooooo....','...obbbbbo...','..obBBBBBbo..','.obBBwwwBBbo.','obBBwWWWwBBbc',
+'obBBwWWWwBBcc','obBBwWWWwBBcc','obBBwWWWwBBbc','.obBBwwwBBbo.','..obBBBBBbo..',
+'...obbbbbo...','....ooooo....']);
+SPR.sniper = spr([
+'......ooo......','.....ovvvo.....','....ovVVVvo....','...ovVwwwVvo...','..ovVwWWWwVvooo',
+'.ovVwWWWWWvvoVV','..ovVwWWWwVvooo','...ovVwwwVvo...','....ovVVVvo....','.....ovvvo.....',
+'......ooo......']);
+SPR.medic = spr([
+'...ooooo...','..ogggggo..','.ogGGWGGgo.','ogGGWWWGGgo','ogGWWWWWGgo',
+'ogGGWWWGGgo','.ogGGWGGgo.','..ogggggo..','...ooooo...']);
+SPR.rocket = spr(['..oo...','.oaao..','oaWWaoo','.oaao..','..oo...']);
+
 // Плитка пола
 export const floorPattern = floorTile();
