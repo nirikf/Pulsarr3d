@@ -280,5 +280,18 @@ SPR.medic = spr([
 'ogGGWWWGGgo','.ogGGWGGgo.','..ogggggo..','...ooooo...']);
 SPR.rocket = spr(['..oo...','.oaao..','oaWWaoo','.oaao..','..oo...']);
 
+SPR.shielder = spr([
+'....ooooo....','...obbbbbo...','..obBBBBBbo..','.obBBwwwBBbo.','obBBwWWWwBBbc',
+'obBBwWWWwBBcc','obBBwWWWwBBcc','obBBwWWWwBBbc','.obBBwwwBBbo.','..obBBBBBbo..',
+'...obbbbbo...','....ooooo....']);
+SPR.sniper = spr([
+'......ooo......','.....ovvvo.....','....ovVVVvo....','...ovVwwwVvo...','..ovVwWWWwVvooo',
+'.ovVwWWWWWvvoVV','..ovVwWWWwVvooo','...ovVwwwVvo...','....ovVVVvo....','.....ovvvo.....',
+'......ooo......']);
+SPR.medic = spr([
+'...ooooo...','..ogggggo..','.ogGGWGGgo.','ogGGWWWGGgo','ogGWWWWWGgo',
+'ogGGWWWGGgo','.ogGGWGGgo.','..ogggggo..','...ooooo...']);
+SPR.rocket = spr(['..oo...','.oaao..','oaWWaoo','.oaao..','..oo...']);
+
 // Плитка пола
 export const floorPattern = floorTile();
