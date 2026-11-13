@@ -17,6 +17,7 @@ export function recalc(){
   S.drones=L.drone||0;S.bs=200*Math.pow(1.18,L.kir||0);
   S.shieldMax=25*(L.shield||0);S.shieldRegen=6+2*(L.shield||0);
   S.rocket=L.rocket||0;S.rocketCd=(L.rocket||0)>=2?3.5:5;
+  S.rocketDmg=(L.rocket||0)>=2?150:50;
   P.max=D.base+25*(L.armor||0);
   P.shield=Math.min(P.shield,S.shieldMax);
   while(P.dT.length<S.drones)P.dT.push(rand(0,0.6));
@@ -86,7 +87,7 @@ export function shoot(){
 export function fireRocket(){
   if(G.state!=='play'||!S.rocket||P.rocketCd>0)return;
   P.rocketCd=S.rocketCd;
-  fireRocketEntity(P.x+Math.cos(P.aim)*8,P.y+Math.sin(P.aim)*8,P.aim,rand(300,500));
+  fireRocketEntity(P.x+Math.cos(P.aim)*8,P.y+Math.sin(P.aim)*8,P.aim,S.rocketDmg);
   A.rocket();shake(2);part(P.x,P.y,'#ffb020',6,70,0.25,1);
 }
 
