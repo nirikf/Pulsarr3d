@@ -9,7 +9,7 @@ import { healPlayer } from './combat.js';
 import { flash, ring, part } from './effects.js';
 import { A } from './audio.js';
 import { startWave } from './waves.js';
-import { setState } from './game.js';
+import { setState } from './ui.js';
 
 // Текущие предложения
 export let offer = [];
