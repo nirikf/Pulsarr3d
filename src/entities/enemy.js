@@ -1,5 +1,5 @@
-import { rand, randi, TAU, clamp, BOSS_WAVES, BOSS_NAMES, dodgeCooldown } from '../constants.js';
-import { G, AR, CAM, W, H, nextEid } from '../state.js';
+import { rand,randi,TAU,clamp,BOSS_WAVES,BOSS_NAMES,dodgeCooldown } from '../constants.js';
+import { G,AR,CAM,W,H,nextEid } from '../state.js';
 import { DIFF } from '../constants.js';
 import { SPR } from '../sprites.js';
 import { ring } from '../effects.js';
