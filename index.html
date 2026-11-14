@@ -825,6 +825,42 @@ function update(dt){G.t+=dt;G.shake=Math.max(0,G.shake-dt*22);G.flash=Math.max(0
  updateSpawns();updatePlayer(dt);updateBullets(dt);updateRockets(dt);updateHazards(dt);updateEnemies(dt);updateEnemyBullets(dt);updateDrops(dt);updateCam(dt);
  if(G.active&&!G.queue.length&&!G.enemies.length)waveClear()}
 
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+(function(){
+  var tg = window.Telegram && window.Telegram.WebApp;
+  if(!tg) return;
+  function safe(fn){ try{ fn(); }catch(e){} }
+  safe(function(){ tg.ready(); });
+  safe(function(){ tg.expand(); });
+  safe(function(){ tg.setHeaderColor && tg.setHeaderColor('#0a0518'); });
+  safe(function(){ tg.setBackgroundColor && tg.setBackgroundColor('#0a0518'); });
+  safe(function(){ tg.disableVerticalSwipes && tg.disableVerticalSwipes(); });
+  safe(function(){ tg.requestFullscreen && tg.requestFullscreen(); });
+  function sync(){ window.dispatchEvent(new Event('resize')); }
+  safe(function(){ tg.onEvent('viewportChanged', sync); });
+  safe(function(){ tg.onEvent('fullscreenChanged', sync); });
+  safe(function(){
+    tg.BackButton.show();
+    tg.BackButton.onClick(function(){
+      window.dispatchEvent(new KeyboardEvent('keydown',{code:'Escape',bubbles:true}));
+    });
+  });
+  function hap(kind){ safe(function(){ tg.HapticFeedback.impactOccurred(kind); }); }
+  window.addEventListener('keydown',function(e){ if(e.code==='Space') hap('medium'); });
+  document.addEventListener('pointerdown',function(e){ if(e.target && e.target.id==='cv') hap('light'); },true);
+  safe(function(){
+    var stage=document.getElementById('stage');
+    var mo=new MutationObserver(function(){
+      var over=document.getElementById('sOver'), win=document.getElementById('sWin');
+      if(over && over.classList.contains('on')) hap('heavy');
+      if(win && win.classList.contains('on')) safe(function(){ tg.HapticFeedback.notificationOccurred('success'); });
+    });
+    mo.observe(stage,{subtree:true,attributes:true,attributeFilter:['class']});
+  });
+})();
+</script>
+
 initGame();
 })();
 </script>
