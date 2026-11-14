@@ -1,40 +1,78 @@
-import { TAU,hyp,rand,randi,pick,clamp,angDiff,dodgeCooldown,BOSS_NAMES } from '../constants.js';
+import { TAU,hyp,rand,randi,pick,clamp,angDiff,dodgeCooldown } from '../constants.js';
 import { G,P,AR } from '../state.js';
 import { DIFF } from '../constants.js';
 import { eShoot,spawnBeam,spawnZone,spawnShock } from './bullet.js';
 import { makeEnemy } from './enemy.js';
 import { hurtPlayer,killEnemy } from '../combat.js';
-import { part,ring,flash } from '../effects.js';
+import { part,ring,flash,shake } from '../effects.js';
 import { A } from '../audio.js';
 import { SPR } from '../sprites.js';
 
 const DODGE_TYPES={shooter:1,splitter:1,sniper:1,medic:1,emitter:1};
-export function updateEnemies(dt){planShieldGroups();
- for(let i=0;i<G.enemies.length;i++){const e=G.enemies[i];if(e.dead)continue;e.t+=dt;e.fl=Math.max(0,e.fl-dt);e.hitT=Math.max(0,e.hitT-dt);e.shieldFl=Math.max(0,e.shieldFl-dt);
+export function updateEnemies(dt){
+ planShieldGroups();
+ for(let i=0;i<G.enemies.length;i++){
+  const e=G.enemies[i];if(e.dead)continue;
+  e.t+=dt;e.fl=Math.max(0,e.fl-dt);e.hitT=Math.max(0,e.hitT-dt);e.shieldFl=Math.max(0,e.shieldFl-dt);
   const dx=P.x-e.x,dy=P.y-e.y,d=hyp(dx,dy)||1,ux=dx/d,uy=dy/d;
-  if(e.boss)bossAI(e,dt,ux,uy,d);else if(e.type==='shooter')updateShooter(e,dt,d,ux,uy,dx,dy);else if(e.type==='tank')updateTank(e,dt,d,ux,uy,dx,dy);else if(e.type==='shielder')updateShielder(e,dt,d,ux,uy,dx,dy);else if(e.type==='sniper')updateSniper(e,dt,d,ux,uy);else if(e.type==='medic')updateMedic(e,dt,d,ux,uy);else if(e.type==='emitter')updateEmitter(e,dt,d,ux,uy);else updateWalker(e,dt,ux,uy);
+  if(e.boss)bossAI(e,dt,ux,uy,d);
+  else if(e.type==='shooter')updateShooter(e,dt,d,ux,uy,dx,dy);
+  else if(e.type==='tank')updateTank(e,dt,d,ux,uy,dx,dy);
+  else if(e.type==='shielder')updateShielder(e,dt,d,ux,uy,dx,dy);
+  else if(e.type==='sniper')updateSniper(e,dt,d,ux,uy);
+  else if(e.type==='medic')updateMedic(e,dt,d,ux,uy);
+  else if(e.type==='emitter')updateEmitter(e,dt,d,ux,uy);
+  else updateWalker(e,dt,ux,uy);
   if(DODGE_TYPES[e.type])applyDodge(e,dt);
-  e.x+=e.vx*dt;e.y+=e.vy*dt;e.x=clamp(e.x,AR.x+e.r,AR.x+AR.w-e.r);e.y=clamp(e.y,AR.y+e.r,AR.y+AR.h-e.r);
-  if(d<e.r+P.r&&e.hitT<=0&&e.type!=='medic'&&e.type!=='emitter'){hurtPlayer(e.dmg*(e.st==='charge'?1.3:1));e.hitT=0.6;e.vx-=ux*70;e.vy-=uy*70;P.vx+=ux*50;P.vy+=uy*50}}
- for(let i=0;i<G.enemies.length;i++){const a1=G.enemies[i];if(a1.dead)continue;for(let j=i+1;j<G.enemies.length;j++){const b1=G.enemies[j];if(b1.dead)continue;const ddx=b1.x-a1.x,ddy=b1.y-a1.y,rr=a1.r+b1.r,d2=ddx*ddx+ddy*ddy;if(d2<rr*rr&&d2>0.01){const dd=Math.sqrt(d2),ff=(rr-dd)/dd*0.4;if(!a1.boss){a1.x-=ddx*ff;a1.y-=ddy*ff}if(!b1.boss){b1.x+=ddx*ff;b1.y+=ddy*ff}}}}
- G.enemies=G.enemies.filter(en=>!en.dead)}
+  e.x+=e.vx*dt;e.y+=e.vy*dt;
+  e.x=clamp(e.x,AR.x+e.r,AR.x+AR.w-e.r);e.y=clamp(e.y,AR.y+e.r,AR.y+AR.h-e.r);
+  if(d<e.r+P.r&&e.hitT<=0&&e.type!=='medic'&&e.type!=='emitter'){hurtPlayer(e.dmg*(e.st==='charge'?1.3:1));e.hitT=0.6;e.vx-=ux*70;e.vy-=uy*70;P.vx+=ux*50;P.vy+=uy*50}
+ }
+ for(let i=0;i<G.enemies.length;i++){
+  const a1=G.enemies[i];if(a1.dead)continue;
+  for(let j=i+1;j<G.enemies.length;j++){
+   const b1=G.enemies[j];if(b1.dead)continue;
+   const ddx=b1.x-a1.x,ddy=b1.y-a1.y,rr=a1.r+b1.r,d2=ddx*ddx+ddy*ddy;
+   if(d2<rr*rr&&d2>0.01){const dd=Math.sqrt(d2),ff=(rr-dd)/dd*0.4;if(!a1.boss){a1.x-=ddx*ff;a1.y-=ddy*ff}if(!b1.boss){b1.x+=ddx*ff;b1.y+=ddy*ff}}
+  }
+ }
+ G.enemies=G.enemies.filter(en=>!en.dead);
+}
 
-function planShieldGroups(){const groups=new Map(),snipers=[];for(const e of G.enemies){if(e.dead)continue;if(e.type==='sniper')snipers.push(e);if(e.type==='shielder'){const k=e.group!=null?e.group:'solo'+e.id;if(!groups.has(k))groups.set(k,[]);groups.get(k).push(e)}}
- const claimed=new Set();for(const mem of groups.values()){mem.sort((a,b)=>a.slot-b.slot);const n=mem.length;let cx=0,cy=0;for(const m of mem){cx+=m.x;cy+=m.y}cx/=n;cy/=n;
+function planShieldGroups(){
+ const groups=new Map(),snipers=[];
+ for(const e of G.enemies){if(e.dead)continue;if(e.type==='sniper')snipers.push(e);if(e.type==='shielder'){const k=e.group!=null?e.group:'solo'+e.id;if(!groups.has(k))groups.set(k,[]);groups.get(k).push(e)}}
+ const claimed=new Set();
+ for(const mem of groups.values()){
+  mem.sort((a,b)=>a.slot-b.slot);const n=mem.length;let cx=0,cy=0;for(const m of mem){cx+=m.x;cy+=m.y}cx/=n;cy/=n;
   let guard=null;if(mem[0].guardId!=null)guard=snipers.find(s=>s.id===mem[0].guardId)||null;
   if(!guard){let bd=1e9;for(const s of snipers){if(claimed.has(s.id))continue;const d=hyp(s.x-cx,s.y-cy);if(d<bd){bd=d;guard=s}}if(bd>300)guard=null}
   if(guard)claimed.add(guard.id);
   const dP=hyp(P.x-cx,P.y-cy),prev=mem[0].mode;let mode,ax=cx,ay=cy,ar=0;
   if(guard){mode='guard';ax=guard.x;ay=guard.y;ar=27}else if(n===1)mode='solo';else{const close=prev==='circle'?dP<96:dP<74;mode=close?'circle':'cluster';ar=24}
   const toP=Math.atan2(P.y-ay,P.x-ax),base=mode==='guard'?G.t*0.5:G.t*0.25;
-  for(let i=0;i<n;i++){const m=mem[i];m.guardId=guard?guard.id:null;m.mode=mode;m.ax=ax;m.ay=ay;m.ar=ar;
+  for(let i=0;i<n;i++){
+   const m=mem[i];m.guardId=guard?guard.id:null;m.mode=mode;m.ax=ax;m.ay=ay;m.ar=ar;
    if(mode==='solo'){m.tx=P.x;m.ty=P.y;m.tface=toP}
    else if(mode==='cluster'){const off=(i-(n-1)/2)*14,px=-Math.sin(toP),py=Math.cos(toP);m.tx=ax+px*off+Math.cos(toP)*16;m.ty=ay+py*off+Math.sin(toP)*16;m.tface=toP}
-   else{const a=base+i*TAU/n;m.tx=ax+Math.cos(a)*ar;m.ty=ay+Math.sin(a)*ar;m.tface=a}}}
+   else{const a=base+i*TAU/n;m.tx=ax+Math.cos(a)*ar;m.ty=ay+Math.sin(a)*ar;m.tface=a}
+  }
+ }
 }
-function applyDodge(e,dt){if(G.wave<=5)return;e.dodgeCd-=dt;e.dodgeT-=dt;if(e.dodgeT>0){e.vx=e.vx*0.25+e.dvx;e.vy=e.vy*0.25+e.dvy;return}if(e.dodgeCd>0||!isFinite(e.dodgeCd))return;
- for(const bl of G.bul){const rx=e.x-bl.x,ry=e.y-bl.y,v2=bl.vx*bl.vx+bl.vy*bl.vy;if(v2<1)continue;const t=(rx*bl.vx+ry*bl.vy)/v2;if(t<0||t>0.55)continue;const cx=rx-bl.vx*t,cy=ry-bl.vy*t;if(cx*cx+cy*cy>(e.r+bl.r+7)**2)continue;
-  const vl=Math.sqrt(v2),px=-bl.vy/vl,py=bl.vx/vl,side=(cx*px+cy*py)>=0?1:-1,sp=e.sp*1.9+65;e.dvx=px*side*sp;e.dvy=py*side*sp;e.dodgeT=0.22;e.dodgeCd=dodgeCooldown(G.wave)*rand(0.8,1.2);part(e.x,e.y,'#ffffff',2,40,0.15,1);return}}
+function applyDodge(e,dt){
+ if(G.wave<=5)return;
+ e.dodgeCd-=dt;e.dodgeT-=dt;
+ if(e.dodgeT>0){e.vx=e.vx*0.25+e.dvx;e.vy=e.vy*0.25+e.dvy;return}
+ if(e.dodgeCd>0||!isFinite(e.dodgeCd))return;
+ for(const bl of G.bul){
+  const rx=e.x-bl.x,ry=e.y-bl.y,v2=bl.vx*bl.vx+bl.vy*bl.vy;if(v2<1)continue;
+  const t=(rx*bl.vx+ry*bl.vy)/v2;if(t<0||t>0.55)continue;
+  const cx=rx-bl.vx*t,cy=ry-bl.vy*t;if(cx*cx+cy*cy>(e.r+bl.r+7)**2)continue;
+  const vl=Math.sqrt(v2),px=-bl.vy/vl,py=bl.vx/vl,side=(cx*px+cy*py)>=0?1:-1,sp=e.sp*1.9+65;
+  e.dvx=px*side*sp;e.dvy=py*side*sp;e.dodgeT=0.22;e.dodgeCd=dodgeCooldown(G.wave)*rand(0.8,1.2);
+  part(e.x,e.y,'#ffffff',2,40,0.15,1);return;
+ }
+}
 
 function updateShooter(e,dt,d,ux,uy,dx,dy){let tx,ty;if(d<70){tx=-ux;ty=-uy}else if(d>110){tx=ux;ty=uy}else{tx=-uy;ty=ux}e.vx+=(tx*e.sp-e.vx)*Math.min(1,4*dt);e.vy+=(ty*e.sp-e.vy)*Math.min(1,4*dt);e.cd-=dt;e.tel=e.cd<0.3?1:0;if(e.cd<=0){e.cd=rand(1.5,2.2)/DIFF[G.diff].sp;eShoot(e,Math.atan2(dy,dx),95,8*DIFF[G.diff].dmg,SPR.orbA);part(e.x,e.y,'#ffb020',3,50,0.2,1);A.tone(300,0.06,'square',0.04,0.6)}}
 function updateTank(e,dt,d,ux,uy,dx,dy){if(e.st==='walk'){e.vx+=(ux*e.sp-e.vx)*Math.min(1,3*dt);e.vy+=(uy*e.sp-e.vy)*Math.min(1,3*dt);e.cd-=dt;if(e.cd<=0&&d<130){e.st='tel';e.cd=0.75;e.lock=Math.atan2(dy,dx)}}else if(e.st==='tel'){e.cd-=dt;e.tel=1;e.vx*=0.86;e.vy*=0.86;if(e.cd<=0){e.st='charge';e.cd=0.6;e.tel=0;A.tone(120,0.22,'sawtooth',0.09,1.8)}}else{e.cd-=dt;e.vx=Math.cos(e.lock)*130;e.vy=Math.sin(e.lock)*130;part(e.x,e.y,'#ff4d4d',1,35,0.25,1);if(e.cd<=0){e.st='walk';e.cd=rand(2.4,3.6)}}}
@@ -46,7 +84,10 @@ function updateMedic(e,dt,d,ux,uy){e.beam=null;if(e.hp<e.max*0.25)e.mode='boom';
 function updateEmitter(e,dt,d,ux,uy){let tx,ty;if(d<120){tx=-ux;ty=-uy}else if(d>170){tx=ux;ty=uy}else{tx=-uy;ty=ux}e.vx+=(tx*e.sp-e.vx)*Math.min(1,3*dt);e.vy+=(ty*e.sp-e.vy)*Math.min(1,3*dt);e.cd-=dt;e.tel=e.cd<0.7?1:0;if(e.cd<=0){e.cd=4.5;const n=G.wave>=18?8:4,base=rand(0,TAU);for(let i=0;i<n;i++)spawnBeam(e.x,e.y,base+i*TAU/n,0.35,1.3,10*DIFF[G.diff].dmg,240,2,'#22e6ff');A.laser()}}
 function updateWalker(e,dt,ux,uy){const wob=(e.type==='splitter')?Math.sin(e.t*3)*0.45:0;const ax=ux*Math.cos(wob)-uy*Math.sin(wob),ay=ux*Math.sin(wob)+uy*Math.cos(wob);e.vx+=(ax*e.sp-e.vx)*Math.min(1,5*dt);e.vy+=(ay*e.sp-e.vy)*Math.min(1,5*dt)}
 
-function bossAI(e,dt,ux,uy,d){const fr=e.hp/e.max;e.phase=fr>0.66?1:(fr>0.33?2:3);document.getElementById('bossPhase').textContent='ФАЗА '+e.phase;document.getElementById('bossFill').style.transform='scaleX('+clamp(fr,0,1)+')';
+function bossAI(e,dt,ux,uy,d){
+ const fr=e.hp/e.max;e.phase=fr>0.66?1:(fr>0.33?2:3);
+ document.getElementById('bossPhase').textContent='ФАЗА '+e.phase;
+ document.getElementById('bossFill').style.transform='scaleX('+clamp(fr,0,1)+')';
  e.shieldAng=(e.shieldAng||0)+dt*(e.bossKind==='prism'?1.1:0.3);
  if(e.st==='charge'){e.chargeT-=dt;e.vx=Math.cos(e.lock)*210;e.vy=Math.sin(e.lock)*210;part(e.x,e.y,e.col,2,50,0.3,1);if(e.chargeT<=0)e.st='';return}
  moveBoss(e,dt,ux,uy,d);
@@ -63,7 +104,9 @@ function pickBossAtk(e){const p=e.phase,k=e.bossKind;
  if(k==='hammer')return pick(p>=2?['shock','zones','charge','pull']:['shock','zones','charge']);
  if(k==='eye')return pick(p>=2?['volley','cross','mark','summon']:['volley','mark']);
  return pick(p>=2?['blink','clones','spiral','radial']:['blink','clones'])}
-function execBoss(e,kind){const D=DIFF[G.diff];
+function execBoss(e,kind){
+ const D=DIFF[G.diff];
+ const dd=hyp(P.x-e.x,P.y-e.y)||1,ux=(P.x-e.x)/dd,uy=(P.y-e.y)/dd;
  if(kind==='radial'){const n=10+e.phase*3;e.ang+=0.24;for(let k=0;k<n;k++)eShoot(e,e.ang+k*TAU/n,72+e.phase*6,9*D.dmg,SPR.orbM);ring(e.x,e.y,e.r,e.r+16,e.col,0.25);A.tone(240,0.1,'square',0.06,0.6)}
  else if(kind==='spiral'){for(let s=0;s<10;s++){const a=e.ang+s*0.42;eShoot(e,a,88,8*D.dmg,SPR.orbA);eShoot(e,a+Math.PI,88,8*D.dmg,SPR.orbA)}e.ang+=0.6;A.tone(300,0.12,'square',0.06,0.7)}
  else if(kind==='charge'){e.st='charge';e.chargeT=0.6;e.lock=Math.atan2(P.y-e.y,P.x-e.x);A.tone(90,0.5,'sawtooth',0.1,2.2)}
@@ -78,4 +121,4 @@ function execBoss(e,kind){const D=DIFF[G.diff];
  else if(kind==='mark'){spawnZone(P.x,P.y,34,0.9,1.2,24*D.dmg,'#ff4d4d');A.tone(700,0.3,'sine',0.05,1.6)}
  else if(kind==='blink'){const a=rand(0,TAU),dist=rand(70,110);e.x=clamp(P.x+Math.cos(a)*dist,AR.x+20,AR.x+AR.w-20);e.y=clamp(P.y+Math.sin(a)*dist,AR.y+20,AR.y+AR.h-20);ring(e.x,e.y,4,40,'#ff2fb0',0.4);A.blink();const n=8+e.phase*2;for(let k=0;k<n;k++)eShoot(e,k*TAU/n,80,8*D.dmg,SPR.orbM)}
  else if(kind==='clones'){for(let i=0;i<2+e.phase;i++){const a=rand(0,TAU),m=makeEnemy('clone',e.x+Math.cos(a)*18,e.y+Math.sin(a)*18);m.vx=Math.cos(a)*80;m.vy=Math.sin(a)*80;G.enemies.push(m)}A.blink()}
-                         }
+}
