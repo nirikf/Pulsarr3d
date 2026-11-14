@@ -671,16 +671,41 @@ initGame();
 })();
 </script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<script>
-(function(){var tg=window.Telegram&&window.Telegram.WebApp;if(!tg||!tg.initData)return;function safe(f){try{f()}catch(e){}}
-safe(function(){tg.ready()});safe(function(){tg.expand()});safe(function(){tg.setHeaderColor&&tg.setHeaderColor('#0a0518')});safe(function(){tg.setBackgroundColor&&tg.setBackgroundColor('#0a0518')});safe(function(){tg.disableVerticalSwipes&&tg.disableVerticalSwipes()});safe(function(){tg.requestFullscreen&&tg.requestFullscreen()});
-function sync(){window.dispatchEvent(new Event('resize'))}safe(function(){tg.onEvent('viewportChanged',sync)});safe(function(){tg.onEvent('fullscreenChanged',sync)});
-safe(function(){tg.BackButton.show();tg.BackButton.onClick(function(){window.dispatchEvent(new KeyboardEvent('keydown',{code:'Escape',bubbles:true}))})});
-function hap(k){safe(function(){tg.HapticFeedback.impactOccurred(k)})}
-window.addEventListener('keydown',function(e){if(e.code==='Space')hap('medium')});
-document.addEventListener('pointerdown',function(e){if(e.target&&e.target.id==='cv')hap('light')},true);
-safe(function(){var mo=new MutationObserver(function(){var o=$('#sOver'),w=$('#sWin');if(o&&o.classList.contains('on'))hap('heavy');if(w&&w.classList.contains('on'))safe(function(){tg.HapticFeedback.notificationOccurred('success')})});mo.observe(document.getElementById('stage'),{subtree:true,attributes:true,attributeFilter:['class']})});
+ <script>
+(function(){
+  var tg = window.Telegram && window.Telegram.WebApp;
+  if(!tg || !tg.initData) return;
+  function safe(f){ try{ f(); }catch(e){} }
+  function el(id){ return document.getElementById(id); }
+  safe(function(){ tg.ready(); });
+  safe(function(){ tg.expand(); });
+  safe(function(){ tg.setHeaderColor && tg.setHeaderColor('#0a0518'); });
+  safe(function(){ tg.setBackgroundColor && tg.setBackgroundColor('#0a0518'); });
+  safe(function(){ tg.disableVerticalSwipes && tg.disableVerticalSwipes(); });
+  safe(function(){ tg.requestFullscreen && tg.requestFullscreen(); });
+  function sync(){ window.dispatchEvent(new Event('resize')); }
+  safe(function(){ tg.onEvent('viewportChanged', sync); });
+  safe(function(){ tg.onEvent('fullscreenChanged', sync); });
+  safe(function(){
+    tg.BackButton.show();
+    tg.BackButton.onClick(function(){
+      window.dispatchEvent(new KeyboardEvent('keydown',{code:'Escape',bubbles:true}));
+    });
+  });
+  function hap(k){ safe(function(){ tg.HapticFeedback.impactOccurred(k); }); }
+  window.addEventListener('keydown',function(e){ if(e.code==='Space') hap('medium'); });
+  document.addEventListener('pointerdown',function(e){ if(e.target && e.target.id==='cv') hap('light'); },true);
+  safe(function(){
+    var stage = el('stage');
+    if(!stage) return;
+    var mo = new MutationObserver(function(){
+      safe(function(){
+        var o = el('sOver'), w = el('sWin');
+        if(o && o.classList.contains('on')) hap('heavy');
+        if(w && w.classList.contains('on')) safe(function(){ tg.HapticFeedback.notificationOccurred('success'); });
+      });
+    });
+    mo.observe(stage,{subtree:true,attributes:true,attributeFilter:['class']});
+  });
 })();
-</script>
-</body>
-</html>
+ </script>
