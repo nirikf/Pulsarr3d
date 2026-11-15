@@ -233,7 +233,7 @@ window.__boot=function(msg){
 };
 window.addEventListener('error',function(e){ if(e.message) window.__boot('ERROR: '+e.message+' @ '+(e.lineno||'')); },true);
 </script>
-<script src="game.js?v=3" onerror="window.__boot('game.js не загрузился. Проверь, что файл лежит рядом с index.html.')"></script>
+<script src="game.js?v=3" onerror="window.__boot('game.js не загрузился.')"></script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <script>
 (function(){
@@ -267,7 +267,7 @@ window.addEventListener('error',function(e){ if(e.message) window.__boot('ERROR:
     mo.observe(stage,{subtree:true,attributes:true,attributeFilter:['class']});
   });
 })();
-setTimeout(function(){ if(!window.__pulsarReady) window.__boot('Игра не инициализировалась. Открой консоль (F12) и пришли первую красную ошибку.'); },2000);
+setTimeout(function(){ if(!window.__pulsarReady) window.__boot('Игра не инициализировалась.'); },2000);
 </script>
 </body>
 </html>
