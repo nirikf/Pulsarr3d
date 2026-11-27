@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>ПУЛЬСАР PIXEL — неоновая арена</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Handjet:wght@400;500;600;700;800&family=Tiny5&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<style>
+:root{--void:#0a0518;--deep:#150a2e;--panel:#1d1040;--panel2:#2a1856;--edge:#4a2a8f;--edge2:#7b4fd6;--cyan:#22e6ff;--green:#9dff3c;--mag:#ff2fb0;--amber:#ffb020;--red:#ff4d4d;--violet:#a86bff;--blue:#4d8cff;--ink:#f4ecff;--dim:#9a8fc4;--f:'Handjet','Tiny5','Courier New',monospace}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--void);color:var(--ink);font-family:var(--f);font-weight:500;font-size:20px;letter-spacing:.6px;overscroll-behavior:none;touch-action:none;user-select:none}
+#stage{position:fixed;inset:0;overflow:hidden}
+canvas#cv{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);image-rendering:pixelated;display:block}
+#crt{position:absolute;inset:0;pointer-events:none;z-index:6;background:repeating-linear-gradient(180deg,rgba(0,0,0,.18) 0 1px,rgba(0,0,0,0) 1px 3px);opacity:.45}
+#vig{position:absolute;inset:0;pointer-events:none;z-index:7;background:radial-gradient(120% 95% at 50% 50%,rgba(0,0,0,0) 45%,rgba(6,2,16,.5) 80%,rgba(4,1,10,.88) 100%)}
+#stage.low #vig{animation:danger .9s steps(2,end) infinite}
+@keyframes danger{0%,100%{box-shadow:inset 0 0 0 rgba(255,77,77,0)}50%{box-shadow:inset 0 0 90px rgba(255,77,77,.5)}}
+.btn{font-family:var(--f);font-weight:700;font-size:20px;letter-spacing:1.5px;text-transform:uppercase;color:var(--ink);background:var(--panel2);border:3px solid var(--edge2);box-shadow:0 5px 0 var(--void);padding:12px 18px;cursor:pointer;clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px)}
+.btn:hover{background:var(--edge);border-color:var(--cyan);color:var(--cyan)}
+.btn:active{transform:translateY(5px);box-shadow:none}
+.btn.pri{background:var(--green);color:#0a0518;border-color:#0a0518;box-shadow:0 5px 0 #3f6b16}
+.btn.pri:hover{background:var(--cyan)}
+.btn.mag{background:var(--mag);color:#12001a;border-color:#0a0518;box-shadow:0 5px 0 #7a1257}
+.btn.tab.on{background:var(--edge);border-color:var(--cyan);color:var(--cyan)}
+.btn.off{border-color:var(--red);color:var(--red)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+*{scrollbar-width:thin;scrollbar-color:var(--cyan) var(--deep)}
+::-webkit-scrollbar{width:12px;height:12px}
+::-webkit-scrollbar-track{background:var(--deep);border-left:2px solid var(--edge)}
+::-webkit-scrollbar-thumb{background:var(--edge2);border:2px solid var(--void)}
+::-webkit-scrollbar-thumb:hover{background:var(--cyan)}
+.padsel{border-color:var(--green)!important;background:var(--edge)!important;color:var(--ink)!important;box-shadow:inset 0 0 0 3px var(--green),0 0 22px rgba(157,255,60,.5)!important;animation:padpulse .9s steps(2,end) infinite}
+.padsel small{color:var(--ink)!important}
+@keyframes padpulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.3)}}
+#top{position:absolute;top:0;left:0;right:0;z-index:12;display:flex;align-items:center;gap:6px;padding:6px 8px;background:linear-gradient(180deg,rgba(10,5,24,.96),rgba(10,5,24,.7) 70%,transparent);pointer-events:none}
+#top .logo{font-size:22px;font-weight:800;color:var(--cyan);text-shadow:2px 2px 0 #12306b,0 0 12px var(--cyan);white-space:nowrap}
+#top .logo em{font-style:normal;color:var(--mag)}
+.chips{display:flex;gap:5px;flex:1;min-width:0;overflow:hidden}
+.chip{display:flex;align-items:center;gap:5px;padding:2px 8px;background:var(--deep);border:2px solid var(--edge);white-space:nowrap;font-size:20px}
+.chip s{text-decoration:none;color:var(--dim);font-size:15px}
+.chip.w b{color:var(--cyan)}.chip.s b{color:var(--green)}.chip.g b{color:var(--mag)}.chip.f b{color:var(--blue)}
+.chip.hit{animation:pop .22s steps(2,end)}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.16)}100%{transform:scale(1)}}
+.tools{display:flex;gap:5px;pointer-events:auto;flex:none}
+.ib{width:38px;height:38px;display:grid;place-items:center;background:var(--deep);border:2px solid var(--edge2);color:var(--ink);cursor:pointer;font-size:20px;box-shadow:0 3px 0 var(--void)}
+.ib:hover{border-color:var(--cyan);color:var(--cyan)}
+#bossbar{position:absolute;left:50%;transform:translateX(-50%);top:56px;z-index:11;width:min(460px,92vw);display:none;pointer-events:none}
+#bossbar.on{display:block}
+#bossbar .lb{display:flex;justify-content:space-between;align-items:center;font-size:19px;color:var(--red);margin-bottom:3px;text-shadow:0 0 8px var(--red)}
+#bossPips{display:flex;gap:4px}
+#bossPips i{width:9px;height:9px;background:var(--edge);border:1px solid var(--void)}
+#bossPips i.on{background:var(--red);box-shadow:0 0 6px var(--red)}
+.bar{height:13px;background:var(--deep);border:2px solid var(--edge2);position:relative;overflow:hidden}
+.bar i{position:absolute;left:0;top:0;bottom:0;width:100%;transform-origin:left center;background:var(--green)}
+.bar.seg:after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 9px,var(--void) 9px 11px)}
+#bossbar .bar i{background:var(--red)}
+#hud{position:absolute;left:0;right:0;bottom:0;z-index:12;display:flex;align-items:flex-end;justify-content:space-between;gap:10px;padding:8px 10px 10px;background:linear-gradient(0deg,rgba(10,5,24,.96),rgba(10,5,24,.6) 60%,transparent);pointer-events:none}
+.vitals{display:flex;flex-direction:column;gap:5px;width:min(46vw,250px);min-width:0}
+.vitals .bar{height:18px}
+.vitals .bar u{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:0 6px;font-size:17px;text-decoration:none;color:var(--ink);text-shadow:1px 1px 0 rgba(0,0,0,.85);z-index:2}
+#hpFill{background:var(--green)}.bar.low i{background:var(--red)}
+#dashFill{background:var(--cyan)}#shFill{background:var(--violet)}#rkFill{background:var(--amber)}
+.vitals .bar.d{height:9px}
+.mods{display:flex;gap:4px;flex-wrap:wrap;max-height:48px;overflow:hidden}
+.mods canvas{width:20px;height:20px;image-rendering:pixelated;background:var(--deep);border:2px solid var(--edge)}
+.combo{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:78px;flex:none}
+.combo b{font-size:26px;color:var(--amber);text-shadow:0 0 10px var(--amber)}
+.combo.hot b{color:var(--mag);text-shadow:0 0 10px var(--mag)}
+.combo s{text-decoration:none;font-size:15px;color:var(--dim)}
+.combo .bar{width:78px;height:7px}
+#comboFill{background:var(--amber)}
+#keyhint{font-size:17px;color:var(--dim);text-align:right;line-height:1.4;flex:none;max-width:34vw}
+#keyhint b{color:var(--cyan)}
+#touchhint{display:none;font-size:15px;color:var(--dim);text-align:right;line-height:1.5}
+#touchhint b{color:var(--cyan)}
+#rbtns{position:absolute;right:12px;bottom:112px;z-index:13;display:none;flex-direction:column;gap:10px;pointer-events:auto;align-items:center}
+.rbtn{width:60px;height:60px;border-radius:50%;border:3px solid var(--cyan);background:rgba(29,16,64,.9);color:var(--cyan);display:grid;place-items:center;padding:0;box-shadow:0 4px 0 var(--void),0 0 14px rgba(34,230,255,.35);cursor:pointer;position:relative}
+.rbtn canvas{width:32px;height:32px;image-rendering:pixelated;display:block}
+.rbtn.w{border-color:var(--amber);box-shadow:0 4px 0 var(--void),0 0 14px rgba(255,176,32,.35)}
+.rbtn.sel{border-color:var(--green);box-shadow:0 4px 0 var(--void),0 0 20px rgba(157,255,60,.6)}
+.rbtn:active{transform:translateY(3px);box-shadow:none}
+.rbtn.cool{opacity:.42}
+.rbtn i{position:absolute;bottom:-4px;right:-4px;font-style:normal;font-size:12px;background:var(--void);border:1px solid var(--edge2);color:var(--ink);padding:0 3px}
+#tutor{position:absolute;left:50%;bottom:120px;transform:translateX(-50%) translateY(10px);z-index:14;max-width:min(440px,84vw);display:none;gap:10px;align-items:flex-start;padding:9px 13px;background:rgba(12,6,28,.96);border:2px solid var(--cyan);border-left-width:6px;box-shadow:0 5px 0 rgba(0,0,0,.5),0 0 22px rgba(34,230,255,.25);pointer-events:none;opacity:0;transition:opacity .25s,transform .25s}
+#tutor.on{display:flex;opacity:1;transform:translateX(-50%) translateY(0)}
+#tutor b{font-size:15px;color:var(--cyan);letter-spacing:2px;flex:none;padding-top:2px}
+#tutor span{font-size:18px;line-height:1.3;color:var(--ink)}
+#banner{position:absolute;left:0;right:0;top:34%;z-index:10;text-align:center;pointer-events:none;opacity:0}
+#banner.go{animation:ban 1.9s steps(24,end)}
+#banner b{display:block;font-size:clamp(30px,7.5vw,58px);font-weight:800;color:var(--cyan);text-shadow:4px 4px 0 var(--mag),8px 8px 0 rgba(0,0,0,.5),0 0 24px var(--cyan)}
+#banner s{display:block;margin-top:8px;text-decoration:none;font-size:19px;color:var(--ink);letter-spacing:4px}
+#banner.dread b{color:#ff2f4f;text-shadow:3px 0 0 #22e6ff,-3px 0 0 #ff2fb0,0 0 26px #ff0033;animation:dread .16s steps(2,end) infinite}
+@keyframes dread{0%{transform:translate(0,0) skewX(0)}25%{transform:translate(-3px,1px) skewX(-4deg)}50%{transform:translate(2px,-2px) skewX(3deg)}75%{transform:translate(-2px,0) skewX(-2deg)}100%{transform:translate(1px,1px) skewX(2deg)}}
+@keyframes ban{0%{opacity:0;transform:translateY(14px) scale(.9)}12%{opacity:1;transform:none}70%{opacity:1}100%{opacity:0;transform:translateY(-10px)}}
+.scr{position:absolute;inset:0;z-index:20;display:none;align-items:flex-start;justify-content:center;padding:12px;background:rgba(8,3,20,.94);overflow-y:auto}
+.scr.on{display:flex}
+.box{width:min(980px,100%);margin:auto;padding:20px;background:var(--panel);border:3px solid var(--edge2);box-shadow:0 0 0 3px var(--void),inset 0 0 0 2px var(--panel2),0 8px 0 rgba(0,0,0,.6);clip-path:polygon(16px 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%,0 16px);background-image:repeating-linear-gradient(180deg,rgba(255,255,255,.02) 0 1px,transparent 1px 3px)}
+.box.wide{width:min(1120px,100%)}
+.eyebrow{font-size:17px;color:var(--mag);letter-spacing:4px;margin-bottom:8px}
+h1{font-size:clamp(38px,8.5vw,68px);font-weight:800;line-height:.95;color:var(--green);text-shadow:4px 4px 0 var(--mag),8px 8px 0 rgba(0,0,0,.55),0 0 30px var(--green);margin-bottom:6px}
+h1 em{font-style:normal;color:var(--cyan);display:block;font-size:.34em;letter-spacing:8px;margin-top:8px}
+.tagline{font-size:17px;color:var(--dim);letter-spacing:2px;margin-bottom:12px}
+.tagline b{color:var(--amber)}
+h2{font-size:clamp(26px,6.5vw,42px);font-weight:800;color:var(--cyan);text-shadow:0 0 14px var(--cyan)}
+h2.bad{color:var(--red);text-shadow:0 0 14px var(--red)}h2.good{color:var(--green);text-shadow:0 0 14px var(--green)}
+.sub{font-size:18px;color:var(--dim);margin:6px 0 12px;line-height:1.4}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:14px}
+.set{margin-top:14px}
+.set>span{display:block;font-size:16px;color:var(--dim);letter-spacing:4px;margin-bottom:8px}
+.pills{display:flex;gap:8px;flex-wrap:wrap}
+.pill{font-family:var(--f);font-weight:600;font-size:19px;padding:9px 13px;background:var(--deep);border:2px solid var(--edge);color:var(--dim);cursor:pointer;box-shadow:0 3px 0 var(--void);text-align:left}
+.pill small{display:block;font-size:14px;color:var(--edge2);margin-top:2px}
+.pill.on{background:var(--edge);border-color:var(--cyan);color:var(--cyan);box-shadow:0 3px 0 var(--void),0 0 12px rgba(34,230,255,.3)}
+.pill.on small{color:var(--ink)}
+.pill:disabled{opacity:.45;cursor:not-allowed}
+.tints{display:flex;gap:6px;flex-wrap:wrap}
+.tint{width:52px;padding:4px 2px 2px;background:var(--deep);border:2px solid var(--edge);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:0 3px 0 var(--void)}
+.tint canvas{image-rendering:pixelated;display:block;width:44px;height:auto}
+.tint s{text-decoration:none;font-size:11px;color:var(--dim);letter-spacing:.5px}
+.tint.on{border-color:var(--green);background:var(--edge);box-shadow:0 3px 0 var(--void),0 0 14px rgba(157,255,60,.4)}
+.tint.on s{color:var(--ink)}
+.panel{margin-top:14px;padding:14px;border:2px dashed var(--edge2);background:var(--deep)}
+.panel .set:first-child{margin-top:0}
+.hidden{display:none!important}
+.keys{display:grid;gap:6px;margin-top:6px}
+.key{display:flex;gap:10px;align-items:center;font-size:18px}
+.key kbd{font-family:var(--f);font-weight:700;font-size:16px;background:var(--deep);border:2px solid var(--edge2);color:var(--cyan);padding:3px 7px;min-width:112px;text-align:center}
+.best{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;padding-top:12px;border-top:2px dashed var(--edge)}
+.best s{display:block;text-decoration:none;font-size:15px;color:var(--dim)}
+.best b{font-size:28px;color:var(--amber);text-shadow:0 0 10px var(--amber)}
+.sig{margin-top:14px;padding-top:12px;border-top:2px dashed var(--edge);display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.sig span{font-size:18px;color:var(--dim);letter-spacing:2px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+.cols.solo{grid-template-columns:1fr}
+.pcol{border:3px solid var(--edge);background:var(--deep);padding:12px;display:flex;flex-direction:column;gap:9px;max-height:min(64vh,620px);overflow-y:auto}
+#titleCols .pcol{max-height:min(42vh,420px)}
+#shopCols .pcol{max-height:min(56vh,560px)}
+.phead{font-size:22px;font-weight:800;letter-spacing:3px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.phead em{font-style:normal;font-size:17px;color:var(--dim)}
+.pstat{display:flex;gap:12px;flex-wrap:wrap;font-size:18px;color:var(--dim)}
+.pstat b{color:var(--blue)}
+.card{text-align:left;padding:12px;background:var(--panel);border:3px solid var(--edge);cursor:pointer;box-shadow:0 5px 0 var(--void);color:var(--ink);font-family:var(--f);width:100%;clip-path:polygon(9px 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%,0 9px)}
+.card.gold{border-color:var(--amber);background:#241400;box-shadow:0 5px 0 var(--void),0 0 16px rgba(255,176,32,.3)}
+.card:hover:not(:disabled){border-color:var(--cyan);transform:translateY(-3px)}
+.card:disabled{opacity:.45;cursor:not-allowed}
+.card canvas{width:40px;height:40px;image-rendering:pixelated;display:block;margin-bottom:8px}
+.card h4{font-size:23px;font-weight:800;color:var(--green);margin-bottom:5px}
+.card.gold h4{color:var(--amber)}
+.card p{font-size:17px;line-height:1.35;color:var(--dim)}
+.card .lv{display:flex;gap:3px;margin-top:9px}
+.card .lv i{width:14px;height:7px;background:var(--edge)}
+.card .lv i.f{background:var(--cyan);box-shadow:0 0 6px var(--cyan)}
+.card .num{float:right;font-size:18px;color:var(--edge2)}
+.sb{font-family:var(--f);font-weight:700;font-size:18px;padding:10px 12px;background:var(--panel);border:2px solid var(--edge);color:var(--ink);cursor:pointer;box-shadow:0 3px 0 var(--void)}
+.sb.gold{border-color:var(--amber);color:var(--amber)}
+.sb:disabled{opacity:.35;cursor:not-allowed}
+.upshop{display:flex;flex-wrap:wrap;gap:6px;align-items:center;border-top:2px dashed var(--edge);padding-top:8px}
+.upsh{font-size:20px;color:var(--mag);width:100%;font-weight:700}
+.revive{width:100%;font-size:18px;padding:11px}
+.shopwrap{display:grid;grid-template-columns:252px minmax(0,1fr);gap:16px;align-items:start;margin-top:10px}
+.merchant{position:sticky;top:0;border:3px solid var(--edge);background:radial-gradient(120% 90% at 50% 20%,#1b1040,#0b0520 75%);padding:10px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.merchant canvas{width:100%;max-width:230px;height:auto;image-rendering:pixelated;display:block}
+.mname{font-size:20px;font-weight:800;color:var(--green);letter-spacing:2px;text-align:center;line-height:1.1}
+.msub{font-size:14px;color:var(--dim);text-align:center;line-height:1.2}
+.msay{min-height:76px;width:100%;margin-top:4px;padding:8px 10px;background:var(--deep);border:2px solid var(--edge2);border-left:5px solid var(--green);font-size:17px;line-height:1.3;color:var(--ink);position:relative}
+.msay:empty{opacity:.35}
+.msay:before{content:'';position:absolute;top:-9px;left:16px;border:5px solid transparent;border-bottom-color:var(--edge2)}
+.msay i{font-style:normal;color:var(--green)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:12px 0}
+.stat{padding:10px;background:var(--deep);border:2px solid var(--edge)}
+.stat s{display:block;text-decoration:none;font-size:15px;color:var(--dim);margin-bottom:4px}
+.stat b{font-size:28px;color:var(--cyan)}
+.stat.g b{color:var(--green)}.stat.a b{color:var(--amber)}.stat.m b{color:var(--mag)}
+.rec{display:inline-block;margin:10px 0;padding:5px 12px;background:var(--amber);color:#231400;font-size:19px;font-weight:700;border:2px solid var(--void)}
+.mp .t{font-size:17px;color:var(--cyan);letter-spacing:3px;margin:12px 0 8px}
+.mp .t:first-child{margin-top:0}
+.mp input{font-family:var(--f);font-weight:700;font-size:22px;letter-spacing:4px;text-transform:uppercase;background:var(--void);border:2px solid var(--edge2);color:var(--amber);padding:8px;width:180px;text-align:center}
+.mp .code{font-size:32px;color:var(--amber);letter-spacing:8px;text-shadow:0 0 12px var(--amber)}
+.mp .st{font-size:17px;color:var(--dim);margin-top:6px}
+.mrow{display:flex;align-items:center;gap:10px;padding:10px;border:2px solid var(--edge);background:var(--panel)}
+.mrow.owned{border-color:var(--green);background:#101f14}
+.mrow .mi{flex:1;min-width:0}
+.mrow .mi b{display:block;color:var(--green);font-size:20px;font-weight:800}
+.mrow .mi s{display:block;text-decoration:none;color:var(--dim);font-size:15px;line-height:1.3}
+.mrow .ml{color:var(--cyan);font-size:17px;white-space:nowrap}
+.mrow .sb{flex:none}
+.volrow{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.vlab{font-size:17px;color:var(--dim);min-width:96px;letter-spacing:2px}
+.vval{font-size:17px;color:var(--cyan);min-width:44px;text-align:right}
+.vslide{-webkit-appearance:none;appearance:none;flex:1;height:12px;background:var(--deep);border:2px solid var(--edge2);outline:none;cursor:pointer}
+.vslide::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:20px;background:var(--cyan);border:2px solid var(--void);cursor:pointer}
+.vslide::-moz-range-thumb{width:14px;height:18px;background:var(--cyan);border:2px solid var(--void);cursor:pointer;border-radius:0}
+#nowPlaying{font-size:16px;color:var(--dim);margin-top:6px;letter-spacing:2px}
+.gtabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.gprog{font-size:17px;color:var(--dim);margin-bottom:10px}
+.gprog b{color:var(--green)}
+.gsec{font-size:17px;color:var(--mag);letter-spacing:4px;margin:16px 0 8px;padding-bottom:6px;border-bottom:2px dashed var(--edge)}
+.ggrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.gcard{display:flex;gap:12px;padding:11px;background:var(--deep);border:2px solid var(--edge);align-items:flex-start}
+.gcard.lock{opacity:.6;border-style:dashed}
+.gcard.boss{border-color:var(--red);background:#1c0a1c}
+.gcard canvas{image-rendering:pixelated;display:block;flex:none;background:#08040f;border:2px solid var(--edge2);padding:4px}
+.gtxt{min-width:0;flex:1}
+.gtxt b{display:block;font-size:20px;font-weight:800;color:var(--cyan);line-height:1.1}
+.gcard.boss .gtxt b{color:var(--red)}
+.gtxt i{display:block;font-style:normal;font-size:15px;color:var(--amber);margin:2px 0 5px}
+.gtxt p{font-size:16px;line-height:1.35;color:var(--dim)}
+@media (hover:none) and (pointer:coarse){#touchhint{display:block}#keyhint{display:none}#rbtns{display:flex}
+#tutor{left:10px;right:84px;bottom:112px;max-width:none;transform:translateY(10px)}#tutor.on{transform:translateY(0)}}
+@media (max-width:900px){.shopwrap{grid-template-columns:1fr}.merchant{position:static;flex-direction:row;flex-wrap:wrap;justify-content:center;align-items:center}.merchant canvas{max-width:130px}.msay{min-height:0;flex:1;min-width:200px}.mname,.msub{width:100%}}
+@media (max-width:820px){#keyhint{display:none}#top .logo{font-size:18px}.chip s{display:none}.box{padding:14px}.card h4{font-size:20px}.card p{font-size:16px}.pcol{padding:9px}}
+@media (max-width:520px){.cols{gap:7px}.pcol{padding:7px;gap:7px}.card{padding:8px}.card canvas{width:30px;height:30px}.card h4{font-size:18px}.card p{font-size:14px}.sb{font-size:15px;padding:8px}.phead{font-size:18px}.mrow .mi b{font-size:17px}.vlab{min-width:70px;font-size:14px}.btn{font-size:17px;padding:10px 13px}.ggrid{grid-template-columns:1fr}.rbtn{width:54px;height:54px}.rbtn canvas{width:28px;height:28px}.tint{width:46px}.tint canvas{width:38px}#tutor span{font-size:16px}.combo{min-width:64px}.combo .bar{width:64px}.combo b{font-size:22px}}
+@media (max-width:380px){.vitals{width:44vw}#top .logo{display:none}}
+@media (max-height:600px){h1{font-size:32px;margin-bottom:4px}#titleCols .pcol{max-height:34vh}.tagline{display:none}#banner{top:28%}}
+</style>
+</head>
+<body>
+<div id="stage">
+<canvas id="cv"></canvas><div id="crt"></div><div id="vig"></div>
+<header id="top">
+<div class="logo">ПУЛЬСАР<em>·PIXEL</em></div>
+<div class="chips">
+<div class="chip w"><s>УРОВЕНЬ</s><b id="cWave">—</b></div>
+<div class="chip s"><s>СЧЁТ</s><b id="cScore">0</b></div>
+<div class="chip g"><s>◆</s><b id="cShards">0</b></div>
+<div class="chip f"><s>⬡</s><b id="cFrags">0</b></div>
+</div>
+<div class="tools"><button class="ib" id="bPause" data-own="0" title="Пауза и настройки">II</button></div>
+</header>
+<div id="bossbar"><div class="lb"><span id="bossName">СТРАЖ</span><span id="bossPips"><i></i><i></i><i></i></span><span id="bossPhase">ФАЗА 1</span></div><div class="bar seg"><i id="bossFill"></i></div></div>
+<div id="banner"><b></b><s></s></div>
+<div id="tutor"><b>СОВЕТ</b><span></span></div>
+<div id="hud">
+<div class="vitals">
+<div class="bar seg" id="hpBar"><i id="hpFill"></i><u><span>КОРПУС</span><span id="hpTxt">100</span></u></div>
+<div class="bar d" id="shBar" style="display:none"><i id="shFill"></i></div>
+<div class="bar d"><i id="dashFill"></i></div>
+<div class="bar d" id="rkBar" style="display:none"><i id="rkFill"></i></div>
+<div class="mods" id="mods"></div>
+</div>
+<div class="combo" id="comboBox"><b id="comboTxt">x1.0</b><s>КОМБО</s><div class="bar"><i id="comboFill"></i></div></div>
+<div id="keyhint"><b>WASD</b> ход · <b>МЫШЬ</b> прицел<br><b>ПРОБЕЛ</b> рывок · <b>ЛКМ</b> оружие</div>
+<div id="touchhint"><b>2×ТАП СЛЕВА</b> — рывок<br><b>КНОПКИ СПРАВА</b> — оружие</div>
+</div>
+<div id="rbtns"></div>
+
+<section class="scr on" id="sTitle"><div class="box">
+<h1>ПУЛЬСАР<em>PIXEL ARENA</em></h1>
+<p class="tagline">неоновый рогалик-шутер · <b>30 уровней</b> · собери билд из модулей · <b>7 боссов</b></p>
+<div id="titleCols" class="cols solo"></div>
+<div class="set"><span>РЕЖИМ</span><div class="pills" id="modePills"></div></div>
+<div class="best"><div><s>РЕКОРД</s><b id="tBest">0</b></div><div><s>ГЛУБИНА</s><b id="tWave">0</b></div><div><s>БЕСКОНЕЧНЫЙ</s><b id="tEnd">0</b></div><div><s>ЗАБЕГОВ</s><b id="tRuns">0</b></div></div>
+<div class="row">
+<button class="btn pri" id="bStart" data-own="0">НАЧАТЬ ЗАБЕГ</button>
+<button class="btn" id="bGloss" data-own="0">ГЛОССАРИЙ</button>
+<button class="btn tab" id="bTabSettings" data-own="0">НАСТРОЙКИ</button>
+<button class="btn tab" id="bTabCoop" data-own="0">КООП</button>
+</div>
+<div id="panelSettings" class="panel hidden">
+<div class="set"><span>ТЕМА ОФОРМЛЕНИЯ</span><div class="pills" id="themePills"></div></div>
+<div class="set"><span>ГРАФИКА И ОТДАЧА</span><div class="pills"><button class="pill" id="bloomToggle" data-own="0">СВЕЧЕНИЕ: ВКЛ</button><button class="pill" id="hapticToggle" data-own="0">ВИБРАЦИЯ: ВКЛ</button><button class="pill" id="bTutReset" data-own="0">ПОКАЗАТЬ ОБУЧЕНИЕ СНОВА</button></div></div>
+<div class="set" id="volMount"></div>
+<div class="set"><span>СХЕМА УПРАВЛЕНИЯ</span><div class="keys" id="keys1"></div></div>
+</div>
+<div id="panelCoop" class="panel mp hidden">
+<div class="t">ПО ОДНОМУ ЭКРАНУ</div>
+<div class="row" style="margin-top:0"><button class="pill" id="bLocal" data-own="0">2 ИГРОКА НА ОДНОМ ЭКРАНЕ</button></div>
+<div class="t">ПО WI-FI</div>
+<div class="row" style="margin-top:0"><button class="btn" id="mpHost" data-own="0">СОЗДАТЬ ИГРУ</button><input id="mpCode" maxlength="24" placeholder="КОД"><button class="btn" id="mpJoin" data-own="0">ВОЙТИ</button></div>
+<div class="st" id="mpStatus">Одиночная игра. Хост создаёт код, второй игрок вводит его.</div>
+<div class="code" id="mpCodeShow" style="display:none"></div>
+</div>
+<div class="sig"><a class="btn fb" data-own="0" href="https://t.me/Gooseetler" target="_blank" rel="noopener">ОБРАТНАЯ СВЯЗЬ</a><span>сделано hat studio</span></div>
+</div></section>
+
+<section class="scr" id="sGloss"><div class="box">
+<p class="eyebrow">БОРТОВАЯ БАЗА ДАННЫХ</p><h2>ГЛОССАРИЙ</h2>
+<div class="gtabs" id="glossTabs"></div><div class="gprog" id="glossProg"></div><div id="glossBody"></div>
+<div class="row"><button class="btn pri" id="bGlossBack" data-own="0">НАЗАД В МЕНЮ</button></div>
+</div></section>
+
+<section class="scr" id="sUp"><div class="box">
+<p class="eyebrow" id="upEye">ПЕРЕЛЁТ</p><h2 class="good">ВЫБЕРИ МОДУЛЬ</h2>
+<p class="sub" id="upHint"></p><div id="cards"></div>
+<div class="row" style="margin-top:8px"><span class="sub" style="margin:0 0 0 auto">Осколков: <b id="upShards" style="color:var(--mag)">0</b></span></div>
+</div></section>
+
+<section class="scr" id="sShop"><div class="box wide">
+<p class="eyebrow">ТОРГОВЕЦ · ПОСЛЕ БОССА</p><h2>ВЕЧНЫЕ УЛУЧШЕНИЯ</h2>
+<div class="shopwrap">
+<aside class="merchant">
+<canvas id="merchCv" width="240" height="280"></canvas>
+<div class="mname" id="merchName">ГЛАЗАСТЫЙ</div>
+<div class="msub" id="merchSub">меняет фрагменты на железо</div>
+<div class="msay" id="merchSay"></div>
+</aside>
+<div class="shopside">
+<div class="sub">Фрагменты ⬡ у каждого игрока свои и сохраняются между забегами. Копи по 1 или выкупай сразу.</div>
+<div class="sub" style="display:none">Фрагментов: <b id="shopFrags">0</b></div>
+<div id="shopCols" class="cols solo"></div>
+<div class="row"><button class="btn pri" id="bToMap" data-own="0">К КАРТЕ</button></div>
+</div>
+</div>
+</div></section>
+
+<section class="scr" id="sPause"><div class="box" style="max-width:640px">
+<p class="eyebrow">СИСТЕМА ОСТАНОВЛЕНА</p><h2>ПАУЗА</h2>
+<p class="sub">Арена ждёт. Здесь же звук и перезапуск.</p>
+<div class="set"><span>ЗВУК</span>
+<div class="row" style="margin-top:0"><button class="btn" id="bSoundPause" data-own="0">ЗВУК: ВКЛ</button></div>
+<div id="volMountPause" style="margin-top:10px"></div>
+</div>
+<div class="set"><span>УПРАВЛЕНИЕ</span><div class="keys" id="keys2"></div></div>
+<div class="row"><button class="btn pri" id="bResume" data-own="0">ПРОДОЛЖИТЬ</button><button class="btn" id="bRestart2" data-own="0">ЗАНОВО</button><button class="btn" id="bMenu2" data-own="0">В МЕНЮ</button></div>
+</div></section>
+
+<section class="scr" id="sOver"><div class="box" style="max-width:660px">
+<p class="eyebrow">СИГНАЛ ПОТЕРЯН</p><h2 class="bad">КОНТУР РАЗОРВАН</h2>
+<div id="overRec"></div><p class="sub" id="overSub"></p><div class="stats" id="overStats"></div>
+<div class="row"><button class="btn mag" id="bAgain" data-own="0">НОВЫЙ ЗАБЕГ</button><button class="btn" id="bMenu" data-own="0">В МЕНЮ</button></div>
+</div></section>
+
+<section class="scr" id="sWin"><div class="box" style="max-width:660px">
+<p class="eyebrow">МАТКА УЛЬЯ ПАЛА</p><h2 class="good">КОНТУР ЗАМКНУТ</h2>
+<div id="winRec"></div><p class="sub">Тридцать уровней позади. Улей очищен.</p><div class="stats" id="winStats"></div>
+<div class="row"><button class="btn pri" id="bAgain2" data-own="0">ЕЩЁ ЗАБЕГ</button><button class="btn" id="bMenu3" data-own="0">В МЕНЮ</button></div>
+</div></section>
+</div>
+
+<script>
+window.PULSAR_DATA={
+merch:{name:'ГЛАЗАСТЫЙ',sub:'меняет фрагменты на железо',
+first:'Слушай парень, я тебя не спас, но в благородство все ровно не играю, ты приносишь мне фрагменты, а я улучшаю твою колымагу, по рукам?',
+hurt:'Ты б это... Починил что ли корабль, мне больно смотреть.',
+idle:['В твоем возрасте я был таким же, только... Лучше.','Давай быстрее, у меня ещё много дел','Так бы борешься с роем? Напрасно.','Какой-то ты вялый','Боишься меня? Это не dead cells парень, а я не финальный босс. Наверное...','Что смотришь? Я единственный источник Лора что у тебя есть.','Когда то и космос был чернее...','Ты же сегодня уже был? Или не ты?.. Все вы двух глазые на одно лицо...','С возрастом ты теряешь две вещи:\nпервое это память, а второе... Ээ?..']},
+tints:[{n:'РОДНОЙ',d:0},{n:'ЛИМОН',d:45},{n:'САЛАТ',d:90},{n:'МЯТА',d:135},{n:'ЦИАН',d:180},{n:'ЛАЗУРЬ',d:225},{n:'ФИОЛЕТ',d:270},{n:'МАДЖЕНТА',d:315}],
+tut:[
+{k:'move',t:'WASD или стрелки — движение. Прицел мышью.',m:'Левый стик — движение, правый — прицел.'},
+{k:'aim',t:'Огонь идёт сам, пока на арене есть враги. SHIFT — точный ход.',m:'Огонь идёт сам, пока есть враги. Правый стик — прицел.'},
+{k:'shard',t:'Собирай ◆ осколки — за них покупают модули.',m:'Собирай ◆ осколки — за них покупают модули.'},
+{k:'dash',t:'ПРОБЕЛ — рывок: неуязвимость и таран.',m:'Кнопка РЫВОК или двойной тап слева.'},
+{k:'portal',t:'Встань в портал и не двигайся. Через 15с он сработает сам.',m:'Встань в портал и не двигайся. Через 15с он сработает сам.'},
+{k:'module',t:'Выбери модуль. Личные модули корабля стоят 50◆.',m:'Выбери модуль. Личные модули корабля стоят 50◆.'},
+{k:'map',t:'Иконка на карте — тип угрозы. Случайный сектор даёт ×2 лута.',m:'Иконка на карте — тип угрозы. Случайный сектор даёт ×2 лута.'},
+{k:'boss',t:'У босса три фазы. Смотри телеграфы перед атакой.',m:'У босса три фазы. Смотри телеграфы перед атакой.'},
+{k:'hurt',t:'Красная кайма — мало корпуса. Аптечки падают из врагов.',m:'Красная кайма — мало корпуса. Аптечки падают из врагов.'},
+{k:'mine',t:'Мины взводятся через секунду. Расстреливай их издалека.',m:'Мины взводятся через секунду. Расстреливай их издалека.'}],
+gloss:{
+loc:[{t:'std',n:'СЕКТОР',s:'лут ×1',d:'Обычная арена со сбалансированной волной. Безопасная развилка.'},
+{t:'bomb',n:'БОМБЕЖКА',s:'лут ×1.5',d:'Тесная арена, забита медиками, что взрываются при низком HP.'},
+{t:'snipe',n:'ПОД ПРИЦЕЛОМ',s:'лут ×1.5',d:'Пять снайперов и щитоносцы. Уходи с красного пунктира вбок.'},
+{t:'laser',n:'ЛАЗЕР-ТАГ',s:'с 10 ур.',d:'Только эмиттеры с веером вращающихся лучей.'},
+{t:'mine',n:'МИННОЕ ПОЛЕ',s:'с 11 ур. · лут ×1.5',d:'Арена усеяна минами с цепной детонацией. Расстреливай коридоры издалека или подрывайся сам.'},
+{t:'bigship',n:'КРУПНЫЙ КОРАБЛЬ',s:'событие',d:'Спасти людей, успеть сбежать до взрыва или обыскать контейнер. Корпус крепчает с каждой волной.'},
+{t:'mystery',n:'ТАИНСТВЕННЫЙ',s:'лут ×1.5',d:'Узкая длинная арена. Пусто или призрак прошлого босса.'},
+{t:'dark',n:'ТЁМНЫЙ МИР',s:'с 16 ур.',d:'Тёмная копия твоего корабля со всеми модулями. 25% шанс чертежа монстра.'},
+{t:'rand',n:'СЛУЧАЙНЫЙ',s:'лут ×2',d:'Кот в мешке: другой тип локации или событие.'},
+{t:'boss',n:'БОСС',s:'торговец',d:'Уникальный босс. В бесконечном режиме могут повторяться и по несколько сразу.'}],
+ene:{grunt:{n:'ДРОН',s:'ближний',d:'Камикадзе, летит прямо и бьёт корпусом.'},
+mini:{n:'МАЛЁК',s:'рой',d:'Мелкий юркий, из делителей и инкубаторов.'},
+shooter:{n:'СТРЕЛОК',s:'дальний',d:'Держит дистанцию и плюёт сферами.'},
+splitter:{n:'ДЕЛИТЕЛЬ',s:'дробится',d:'При смерти распадается на двух мальков.'},
+tank:{n:'ТАНК',s:'таран',d:'Броня, телеграф рывка, взрыв при смерти.'},
+shielder:{n:'ЩИТОНОСЕЦ',s:'щит',d:'Дуговой щит спереди, ходит группами.'},
+sniper:{n:'СНАЙПЕР',s:'линия',d:'Наводится и бьёт быстрой пулей на 36 урона.'},
+medic:{n:'МЕДИК',s:'лечит',d:'Лечит союзников, при низком HP становится бомбой.'},
+emitter:{n:'ЭМИТТЕР',s:'лучи',d:'Веер вращающихся лучей во все стороны.'},
+clone:{n:'КЛОН',s:'1 HP',d:'Пустышка Фантома, сбивает автоприцел.'},
+ram:{n:"ТАРАН'ТИНО",s:'с 1 уровня',d:'Таранит и оглушает, шанс оставить воронку. Стальной клин спереди — не стой на линии.'},
+lgun:{n:'ЛАЗЕР-ГАН',s:'луч',d:'Раскрывается, ведёт укороченный луч 3с, взрывается.'},
+mirror:{n:'ЗЕРКАЛЬЩИК',s:'отражает',d:'Лобовой щит возвращает пули. Бей с боков.'},
+brood:{n:'ИНКУБАТОР',s:'рой',d:'Штампует мальков, при смерти — шесть сразу.'},
+jammer:{n:'ГЛУШИТЕЛЬ',s:'глушит',d:'В радиусе 90 оружие не заряжается.'},
+scaredy:{n:'ПУГЛЯШ',s:'с 5 уровня',d:'Стреляет обычными снарядами и убегает. Ближе 60 единиц прячется под купол и становится неуязвимым — отлети, чтобы снова его пробить. Кошмар ближних билдов.'},
+bastard:{n:'УБЛЮДОК',s:'пулемёт',d:'3с плотная очередь, потом 5с неуязвим под щитом.'},
+dark:{n:'ТЁМНЫЙ ДВОЙНИК',s:'босс локации',d:'Копирует корабль и все его орудия. 25% шанс чертежа монстра.'}},
+bo:{guardian:{n:'СТРАЖ',d:'Веера, спирали, таран, призыв дронов.'},
+prism:{n:'ПРИЗМА',d:'Три вращающихся щита, стреляй в промежутки.'},
+hammer:{n:'МОЛОТ',d:'Идёт напролом, волны и зоны, притягивает.'},
+eye:{n:'ОКО',d:'Дальние залпы по пунктиру, кресты лучей, метит зону.'},
+phantom:{n:'ФАНТОМ',d:'Телепорты за спину, клоны, спирали.'},
+twins:{n:'ЭХО И ЭГИДА',d:'Разведи ядра: щитоносец держит купол, пока рядом.'},
+hive:{n:'МАТКА УЛЬЯ',d:'На половине HP зовёт лекарей и снайперов, убегает.'}}}
+};
+</script>
+<script>
+window.__boot=function(m){var d=document.getElementById('booterr');if(!d){d=document.createElement('pre');d.id='booterr';d.style.cssText='position:fixed;z-index:999;top:0;left:0;right:0;max-height:50%;overflow:auto;background:#200505;color:#ff9090;padding:10px;font:13px monospace;white-space:pre-wrap';document.body.appendChild(d)}d.textContent+=m+'\n'};
+window.addEventListener('error',function(e){if(e.message)window.__boot('ERROR: '+e.message+' @ '+(e.lineno||''))},true);
+</script>
+<script src="game.js?v=18" onerror="window.__boot('game.js не загрузился')"></script>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+(function(){var tg=window.Telegram&&window.Telegram.WebApp;if(!tg||!tg.initData)return;
+function s(f){try{f()}catch(e){}}
+s(function(){tg.ready()});s(function(){tg.expand()});s(function(){tg.disableVerticalSwipes&&tg.disableVerticalSwipes()});
+s(function(){tg.requestFullscreen&&tg.requestFullscreen()});
+function sy(){window.dispatchEvent(new Event('resize'))}
+s(function(){tg.onEvent('viewportChanged',sy)});s(function(){tg.onEvent('fullscreenChanged',sy)});
+s(function(){tg.BackButton.show();tg.BackButton.onClick(function(){window.dispatchEvent(new KeyboardEvent('keydown',{code:'Escape',bubbles:true}))})});
+})();
+setTimeout(function(){if(!window.__pulsarReady)window.__boot('Игра не инициализировалась. Открой консоль (F12).')},2500);
+</script>
+</body>
+</html>
